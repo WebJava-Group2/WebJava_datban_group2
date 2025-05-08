@@ -1,21 +1,19 @@
 package org.datban.webjava.models;
 
-public class ReservationCombo {
+public class ReservationTable {
     private Integer id;
     private Integer reservationId;
-    private Integer comboId;
-    private Integer quantity;
+    private Integer tableId;
 
     // Constructor mặc định
-    public ReservationCombo() {
+    public ReservationTable() {
     }
 
     // Constructor đầy đủ
-    public ReservationCombo(Integer id, Integer reservationId, Integer comboId, Integer quantity) {
+    public ReservationTable(Integer id, Integer reservationId, Integer tableId) {
         this.id = id;
         this.reservationId = reservationId;
-        this.comboId = comboId;
-        this.quantity = quantity;
+        this.tableId = tableId;
     }
 
     // Getters và Setters
@@ -35,19 +33,11 @@ public class ReservationCombo {
         this.reservationId = reservationId;
     }
 
-    public Integer getComboId() {
-        return comboId;
+    public Integer getTableId() {
+        return tableId;
     }
 
-    public void setComboId(Integer comboId) {
-        this.comboId = comboId;
-    }
-
-    public Integer getQuantity() {
-        return quantity;
-    }
-
-    public void setQuantity(Integer quantity) {
-        this.quantity = quantity;
+    public void setTableId(Integer tableId) {
+        this.tableId = tableId;
     }
 }
