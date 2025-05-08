@@ -1,0 +1,212 @@
+-- Tạo database webjava
+DROP DATABASE IF EXISTS web_java;
+CREATE DATABASE IF NOT EXISTS web_java;
+USE web_java;
+
+-- Tạo bảng users
+CREATE TABLE users (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(100) NOT NULL,
+    email VARCHAR(100) UNIQUE NOT NULL,
+    phone VARCHAR(20) UNIQUE NOT NULL,
+    password VARCHAR(100) NOT NULL,
+    role ENUM('admin', 'customer') NOT NULL,
+    created_at TIMESTAMP NOT NULL
+);
+
+-- Tạo bảng reviews
+CREATE TABLE reviews (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    customer_id INT NOT NULL,
+    rating INT NOT NULL,  
+    content TEXT NOT NULL,
+    created_at TIMESTAMP NOT NULL,
+    FOREIGN KEY (customer_id) REFERENCES users(id)
+);
+
+-- Tạo bảng reservations
+CREATE TABLE reservations (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    total_people INT NOT NULL,
+    status ENUM('pending', 'confirmed', 'cancelled') NOT NULL,
+    reservation_at TIMESTAMP NOT NULL,
+    note TEXT,
+    total_price FLOAT NOT NULL,
+    created_at TIMESTAMP NOT NULL,
+    customer_id INT NOT NULL,
+    FOREIGN KEY (customer_id) REFERENCES users(id)
+);
+
+-- Tạo bảng tables
+CREATE TABLE tables (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(100) NOT NULL,
+    capacity INT NOT NULL,
+    status ENUM('available', 'occupied', 'reserved') NOT NULL,
+    location TEXT NOT NULL
+);
+
+-- Tạo bảng reservation_table (bảng trung gian)
+CREATE TABLE reservation_table (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    reservation_id INT NOT NULL,
+    table_id INT NOT NULL,
+    FOREIGN KEY (reservation_id) REFERENCES reservations(id),
+    FOREIGN KEY (table_id) REFERENCES tables(id)
+);
+
+-- Tạo bảng combo
+CREATE TABLE combo (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(100) NOT NULL,
+    price FLOAT NOT NULL,
+    description TEXT NOT NULL,
+    status ENUM('available', 'unavailable') NOT NULL,
+    image_url VARCHAR(100) NOT NULL
+);
+
+-- Tạo bảng food
+CREATE TABLE food (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(100) NOT NULL,
+    description TEXT NOT NULL,
+    price FLOAT NOT NULL,
+    image_url VARCHAR(100) NOT NULL,
+    status ENUM('available', 'unavailable') NOT NULL
+);
+
+-- Tạo bảng combo_food (bảng trung gian)
+CREATE TABLE combo_food (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    combo_id INT NOT NULL,
+    food_id INT NOT NULL,
+    quantity INT NOT NULL,
+    FOREIGN KEY (combo_id) REFERENCES combo(id),
+    FOREIGN KEY (food_id) REFERENCES food(id)
+);
+
+-- Tạo bảng reservation_food (bảng trung gian)
+CREATE TABLE reservation_food (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    reservation_id INT NOT NULL,
+    food_id INT NOT NULL,
+    quantity INT NOT NULL,
+    FOREIGN KEY (reservation_id) REFERENCES reservations(id),
+    FOREIGN KEY (food_id) REFERENCES food(id)
+);
+
+-- Tạo bảng reservation_combo (bảng trung gian)
+CREATE TABLE reservation_combo (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    reservation_id INT NOT NULL,
+    combo_id INT NOT NULL,
+    quantity INT NOT NULL,
+    FOREIGN KEY (reservation_id) REFERENCES reservations(id),
+    FOREIGN KEY (combo_id) REFERENCES combo(id)
+); 
+-- Tạo index giúp query nhanh hơn
+
+-- Index cho bảng users (email, phone)
+CREATE INDEX idx_users_email ON users(email);
+CREATE INDEX idx_users_phone ON users(phone);
+
+-- Index cho bảng reviews (rating)
+CREATE INDEX idx_reviews_rating ON reviews(rating);
+
+-- Index cho bảng reservations (status, reservation_at, customer_id)
+CREATE INDEX idx_reservations_status ON reservations(status);
+CREATE INDEX idx_reservations_reservation_at ON reservations(reservation_at);
+CREATE INDEX idx_reservations_customer_id ON reservations(customer_id);
+
+-- Index cho bảng tables (status)
+CREATE INDEX idx_tables_status ON tables(status);
+
+-- Index cho bảng combo (status)
+CREATE INDEX idx_combo_status ON combo(status);
+
+-- Index cho bảng food (status)
+CREATE INDEX idx_food_status ON food(status);
+
+
+-- Chèn dữ liệu mẫu vào bảng users
+INSERT INTO users (name, email, phone, password, role, created_at) VALUES
+('Admin User', 'admin@webjava.com', '0901234567', '$2a$10$xzCxX7c1K7NrLzGlzRYsT.6CY0qOXmEf3F1sOVB5CY8hBja8gEBqG', 'admin', NOW()),
+('Staff User', 'staff@webjava.com', '0909876543', '$2a$10$dEvXs7xKPB.MmOtZw9xV6.Qgr7aaGF0Hl8v/JRJDvM/xZ1QnNQFbO', 'admin', NOW()),
+('Customer 1', 'customer1@gmail.com', '0912345678', '$2a$10$1JxD1GP5r.HQfEPd0jO1tuH45L95M6qVJ5B4zx83YGVpOF02MsM2O', 'customer', NOW()),
+('Customer 2', 'customer2@gmail.com', '0923456789', '$2a$10$mEE9HrKhPRK5MrMjgQ4DqePvEBHzLPJCgw.fkWIyL18M4CjSP17ju', 'customer', NOW()),
+('Customer 3', 'customer3@gmail.com', '0934567890', '$2a$10$7VZvs1yvFT9M7R9G.gsCUuq2.6gVLI.jxwjLdpvJ/UVJecXfEP0.O', 'customer', NOW());
+
+-- Chèn dữ liệu mẫu vào bảng tables
+INSERT INTO tables (name, capacity, status, location) VALUES
+('Bàn A1', 2, 'available', 'Tầng 1 - Cửa sổ'),
+('Bàn A2', 2, 'available', 'Tầng 1 - Cửa sổ'),
+('Bàn B1', 4, 'available', 'Tầng 1 - Giữa'),
+('Bàn B2', 4, 'available', 'Tầng 1 - Giữa'),
+('Bàn C1', 6, 'available', 'Tầng 2 - Cửa sổ'),
+('Bàn C2', 8, 'available', 'Tầng 2 - Ban công'),
+('Bàn VIP1', 10, 'available', 'Tầng 3 - Phòng riêng');
+
+-- Chèn dữ liệu mẫu vào bảng food
+INSERT INTO food (name, description, price, image_url, status) VALUES
+('Cà phê đen', 'Cà phê đen nguyên chất, vị đắng đậm đà', 29000, '/images/foods/ca-phe-den.jpg', 'available'),
+('Cà phê sữa', 'Cà phê sữa béo ngậy', 35000, '/images/foods/ca-phe-sua.jpg', 'available'),
+('Trà sen vàng', 'Trà hương sen thanh mát', 45000, '/images/foods/tra-sen.jpg', 'available'),
+('Bánh flan', 'Bánh flan mềm mịn với caramel', 25000, '/images/foods/banh-flan.jpg', 'available'),
+('Salad trộn', 'Salad rau củ tươi ngon với sốt đặc biệt', 65000, '/images/foods/salad.jpg', 'available'),
+('Mì Ý sốt bò bằm', 'Mì Ý với sốt bò bằm đậm đà', 85000, '/images/foods/mi-y.jpg', 'available'),
+('Gà nướng', 'Gà nướng nguyên con với sốt BBQ', 250000, '/images/foods/ga-nuong.jpg', 'available'),
+('Bò bít tết', 'Bò bít tết Úc kèm khoai tây chiên', 180000, '/images/foods/bo-bit-tet.jpg', 'available'),
+('Bánh pizza hải sản', 'Pizza hải sản phô mai với đế giòn', 150000, '/images/foods/pizza.jpg', 'available'),
+('Nước cam tươi', 'Nước cam ép tươi 100%', 35000, '/images/foods/nuoc-cam.jpg', 'available');
+
+-- Chèn dữ liệu mẫu vào bảng combo
+INSERT INTO combo (name, price, description, status, image_url) VALUES
+('Combo cặp đôi', 250000, 'Combo dành cho 2 người gồm 2 món chính, 2 món tráng miệng và 2 đồ uống', 'available', '/images/combos/cap-doi.jpg'),
+('Combo gia đình', 450000, 'Combo dành cho 4 người gồm 4 món chính, 4 món tráng miệng và 4 đồ uống', 'available', '/images/combos/gia-dinh.jpg'),
+('Combo tiệc nhỏ', 850000, 'Combo dành cho 8 người gồm 8 món chính, 8 món tráng miệng và 8 đồ uống', 'available', '/images/combos/tiec-nho.jpg');
+
+-- Chèn dữ liệu mẫu vào bảng combo_food
+INSERT INTO combo_food (combo_id, food_id, quantity) VALUES
+(1, 6, 2), -- 2 Mì Ý cho combo cặp đôi
+(1, 4, 2), -- 2 Bánh flan cho combo cặp đôi
+(1, 2, 2), -- 2 Cà phê sữa cho combo cặp đôi
+(2, 8, 2), -- 2 Bò bít tết cho combo gia đình
+(2, 9, 2), -- 2 Pizza cho combo gia đình
+(2, 4, 4), -- 4 Bánh flan cho combo gia đình
+(2, 10, 4), -- 4 Nước cam cho combo gia đình
+(3, 7, 2), -- 2 Gà nướng cho combo tiệc nhỏ
+(3, 8, 3), -- 3 Bò bít tết cho combo tiệc nhỏ
+(3, 9, 3), -- 3 Pizza cho combo tiệc nhỏ
+(3, 5, 4), -- 4 Salad cho combo tiệc nhỏ
+(3, 10, 8); -- 8 Nước cam cho combo tiệc nhỏ
+
+-- Chèn dữ liệu mẫu vào bảng reservations
+INSERT INTO reservations (total_people, status, reservation_at, note, total_price, created_at, customer_id) VALUES
+(2, 'confirmed', DATE_ADD(NOW(), INTERVAL 1 DAY), 'Kỷ niệm 2 năm yêu nhau', 350000, NOW(), 3),
+(4, 'confirmed', DATE_ADD(NOW(), INTERVAL 2 DAY), 'Sinh nhật con trai', 650000, NOW(), 4),
+(8, 'pending', DATE_ADD(NOW(), INTERVAL 5 DAY), 'Họp lớp', 1200000, NOW(), 5);
+
+-- Chèn dữ liệu mẫu vào bảng reservation_table
+INSERT INTO reservation_table (reservation_id, table_id) VALUES
+(1, 2), -- Đặt bàn A2 cho reservation 1
+(2, 4), -- Đặt bàn B2 cho reservation 2
+(3, 6); -- Đặt bàn C2 cho reservation 3
+
+-- Chèn dữ liệu mẫu vào bảng reservation_food
+INSERT INTO reservation_food (reservation_id, food_id, quantity) VALUES
+(1, 2, 2), -- 2 Cà phê sữa cho reservation 1
+(1, 4, 2), -- 2 Bánh flan cho reservation 1
+(1, 6, 2), -- 2 Mì Ý cho reservation 1
+(2, 5, 1), -- 1 Salad cho reservation 2
+(2, 8, 2), -- 2 Bò bít tết cho reservation 2
+(2, 9, 1), -- 1 Pizza cho reservation 2
+(2, 10, 4); -- 4 Nước cam cho reservation 2
+
+-- Chèn dữ liệu mẫu vào bảng reservation_combo
+INSERT INTO reservation_combo (reservation_id, combo_id, quantity) VALUES
+(3, 3, 1); -- 1 Combo tiệc nhỏ cho reservation 3
+
+-- Chèn dữ liệu mẫu vào bảng reviews
+INSERT INTO reviews (customer_id, rating, content, created_at) VALUES
+(3, 5, 'Món ăn ngon, phục vụ nhiệt tình, không gian đẹp!', DATE_SUB(NOW(), INTERVAL 2 DAY)),
+(4, 4, 'Thức ăn ngon, giá cả hợp lý, tuy nhiên phục vụ hơi chậm vào giờ cao điểm.', DATE_SUB(NOW(), INTERVAL 1 DAY)); 
