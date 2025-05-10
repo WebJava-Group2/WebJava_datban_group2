@@ -2,9 +2,9 @@ package org.datban.webjava.controllers;
 
 import java.io.*;
 
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.*;
-import jakarta.servlet.annotation.*;
+import javax.servlet.ServletException;
+import javax.servlet.http.*;
+import javax.servlet.annotation.*;
 import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
