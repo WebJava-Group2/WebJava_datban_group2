@@ -72,7 +72,8 @@ CREATE TABLE food (
     description TEXT NOT NULL,
     price FLOAT NOT NULL,
     image_url VARCHAR(100) NOT NULL,
-    status ENUM('available', 'unavailable') NOT NULL
+    status ENUM('available', 'unavailable') NOT NULL,
+    meal_type ENUM('breakfast', 'lunch', 'dinner', 'dessert')
 );
 
 -- Tạo bảng combo_food (bảng trung gian)
@@ -147,18 +148,17 @@ INSERT INTO tables (name, capacity, status, location) VALUES
 ('Bàn VIP1', 10, 'available', 'Tầng 3 - Phòng riêng');
 
 -- Chèn dữ liệu mẫu vào bảng food
-INSERT INTO food (name, description, price, image_url, status) VALUES
-('Cà phê đen', 'Cà phê đen nguyên chất, vị đắng đậm đà', 29000, '/images/foods/ca-phe-den.jpg', 'available'),
-('Cà phê sữa', 'Cà phê sữa béo ngậy', 35000, '/images/foods/ca-phe-sua.jpg', 'available'),
-('Trà sen vàng', 'Trà hương sen thanh mát', 45000, '/images/foods/tra-sen.jpg', 'available'),
-('Bánh flan', 'Bánh flan mềm mịn với caramel', 25000, '/images/foods/banh-flan.jpg', 'available'),
-('Salad trộn', 'Salad rau củ tươi ngon với sốt đặc biệt', 65000, '/images/foods/salad.jpg', 'available'),
-('Mì Ý sốt bò bằm', 'Mì Ý với sốt bò bằm đậm đà', 85000, '/images/foods/mi-y.jpg', 'available'),
-('Gà nướng', 'Gà nướng nguyên con với sốt BBQ', 250000, '/images/foods/ga-nuong.jpg', 'available'),
-('Bò bít tết', 'Bò bít tết Úc kèm khoai tây chiên', 180000, '/images/foods/bo-bit-tet.jpg', 'available'),
-('Bánh pizza hải sản', 'Pizza hải sản phô mai với đế giòn', 150000, '/images/foods/pizza.jpg', 'available'),
-('Nước cam tươi', 'Nước cam ép tươi 100%', 35000, '/images/foods/nuoc-cam.jpg', 'available');
-
+INSERT INTO food (name, description, price, image_url, status, meal_type) VALUES
+('Cà phê đen', 'Cà phê đen nguyên chất, vị đắng đậm đà', 29000, '/images/foods/ca-phe-den.jpg', 'available', 'breakfast'),
+('Cà phê sữa', 'Cà phê sữa béo ngậy', 35000, '/images/foods/ca-phe-sua.jpg', 'available', 'breakfast'),
+('Trà sen vàng', 'Trà hương sen thanh mát', 45000, '/images/foods/tra-sen.jpg', 'available', 'lunch'),
+('Bánh flan', 'Bánh flan mềm mịn với caramel', 25000, '/images/foods/banh-flan.jpg', 'available', 'dessert'),
+('Salad trộn', 'Salad rau củ tươi ngon với sốt đặc biệt', 65000, '/images/foods/salad.jpg', 'available', 'lunch'),
+('Mì Ý sốt bò bằm', 'Mì Ý với sốt bò bằm đậm đà', 85000, '/images/foods/mi-y.jpg', 'available', 'lunch'),
+('Gà nướng', 'Gà nướng nguyên con với sốt BBQ', 250000, '/images/foods/ga-nuong.jpg', 'available', 'dinner'),
+('Bò bít tết', 'Bò bít tết Úc kèm khoai tây chiên', 180000, '/images/foods/bo-bit-tet.jpg', 'available', 'dinner'),
+('Bánh pizza hải sản', 'Pizza hải sản phô mai với đế giòn', 150000, '/images/foods/pizza.jpg', 'available', 'dinner'),
+('Nước cam tươi', 'Nước cam ép tươi 100%', 35000, '/images/foods/nuoc-cam.jpg', 'available', 'breakfast');
 -- Chèn dữ liệu mẫu vào bảng combo
 INSERT INTO combo (name, price, description, status, image_url) VALUES
 ('Combo cặp đôi', 250000, 'Combo dành cho 2 người gồm 2 món chính, 2 món tráng miệng và 2 đồ uống', 'available', '/images/combos/cap-doi.jpg'),
