@@ -11,25 +11,8 @@ public class Food {
     private String status;
     private Integer createdBy;
     private Timestamp createdAt;
+    private String mealType;
 
-    // Constructor mặc định
-    public Food() {
-    }
-
-    // Constructor đầy đủ
-    public Food(Integer id, String name, String description, Float price, String imageUrl, 
-               String status, Integer createdBy, Timestamp createdAt) {
-        this.id = id;
-        this.name = name;
-        this.description = description;
-        this.price = price;
-        this.imageUrl = imageUrl;
-        this.status = status;
-        this.createdBy = createdBy;
-        this.createdAt = createdAt;
-    }
-
-    // Getters và Setters
     public Integer getId() {
         return id;
     }
@@ -93,4 +76,14 @@ public class Food {
     public void setCreatedAt(Timestamp createdAt) {
         this.createdAt = createdAt;
     }
+
+    public String getMealType() {
+        return mealType;
+    }
+
+    public void setMealType(String mealType) {
+        this.mealType = mealType;
+    }
+
+
 }
