@@ -1,4 +1,49 @@
 package org.datban.webjava.repositories;
 
-public class TableRepository {
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
+import org.datban.webjava.models.Table;
+import org.datban.webjava.repositories.base.BaseRepository;
+
+public class TableRepository extends BaseRepository<Table, Integer> {
+
+    public TableRepository(Connection connection) {
+        super(connection);
+    }
+
+    @Override
+    protected String getDisplayQuery() {
+        return "SELECT id, name, capacity, status, location " +
+               "FROM tables";
+    }
+
+    @Override
+    protected Table mapResultSetToEntity(ResultSet resultSet) throws SQLException {
+        Table table = new Table();
+        table.setId(resultSet.getInt("id"));
+        table.setName(resultSet.getString("name"));
+        table.setCapacity(resultSet.getInt("capacity"));
+        table.setStatus(resultSet.getString("status"));
+        table.setLocation(resultSet.getString("location"));
+        return table;
+    }
+
+    @Override
+    protected String getInsertQuery() {
+        return "INSERT INTO tables (name, capacity, status, location) VALUES (?, ?, ?, ?)";
+    }
+
+    @Override
+    protected String getUpdateQuery() {
+        return "UPDATE tables SET name = ?, capacity = ?, status = ?, location = ? WHERE id = ?";
+    }
+
+    @Override
+    protected void setEntityParameters(PreparedStatement statement, Table entity) throws SQLException {
+        statement.setString(1, entity.getName());
+        statement.setInt(2, entity.getCapacity());
+        statement.setString(3, entity.getStatus());
+        statement.setString(4, entity.getLocation());
+    }
 }
