@@ -84,6 +84,4 @@ public class Food {
     public void setMealType(String mealType) {
         this.mealType = mealType;
     }
-
-
 }

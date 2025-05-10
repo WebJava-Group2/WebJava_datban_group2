@@ -9,27 +9,27 @@ import org.datban.webjava.repositories.FoodRepository;
 public class FoodService {
     private FoodRepository foodRepository;
 
-//    public FoodService(Connection connection) {
-//        this.foodRepository = new FoodRepository(connection);
-//    }
-
     // Lấy tất cả món ăn
     public List<Food> getAllFoods() throws SQLException {
         return foodRepository.getAll();  // Gọi getAll() từ FoodRepository
     }
 
     // Lấy món ăn sáng
+    public List<Food> getDessert() throws SQLException {
+        return foodRepository.getByMealType("dessert");
+    }
+
     public List<Food> getBreakfast() throws SQLException {
-        return foodRepository.getByMealType("sáng");
+        return foodRepository.getByMealType("breakfast");
     }
 
     // Lấy món ăn trưa
     public List<Food> getLunch() throws SQLException {
-        return foodRepository.getByMealType("trưa");
+        return foodRepository.getByMealType("lunch");
     }
 
     // Lấy món ăn tối
     public List<Food> getDinner() throws SQLException {
-        return foodRepository.getByMealType("tối");
+        return foodRepository.getByMealType("dinner");
     }
 }

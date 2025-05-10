@@ -12,7 +12,7 @@ import org.datban.webjava.services.FoodService;
 
 @WebServlet(name="homeServlet", urlPatterns = {"/foods"})
 public class FoodController extends HttpServlet{
-    private FoodService foodService = new FoodService();
+    private final FoodService foodService = new FoodService();
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         try {
