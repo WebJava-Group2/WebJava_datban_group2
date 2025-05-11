@@ -1,4 +1,4 @@
-package org.datban.webjava.controllers;
+package org.datban.webjava.controllers.admin;
 
 import org.datban.webjava.helpers.DatabaseConnector;
 import javax.servlet.ServletException;
@@ -11,7 +11,8 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-@WebServlet(urlPatterns = {"/health"})
+// Check if the database is connected
+@WebServlet(urlPatterns = {"/admin/health"})
 public class HealthController extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)

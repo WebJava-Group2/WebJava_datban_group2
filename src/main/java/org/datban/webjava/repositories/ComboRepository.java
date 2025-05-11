@@ -15,7 +15,7 @@ public class ComboRepository extends BaseRepository<Combo, Integer> {
     @Override
     protected String getDisplayQuery() {
         return "SELECT id, name, price, description, status, image_url " +
-               "FROM combo";
+               "FROM combos";
     }
 
     @Override
@@ -32,12 +32,12 @@ public class ComboRepository extends BaseRepository<Combo, Integer> {
 
     @Override
     protected String getInsertQuery() {
-        return "INSERT INTO combo (name, price, description, status, image_url) VALUES (?, ?, ?, ?, ?)";
+        return "INSERT INTO combos (name, price, description, status, image_url) VALUES (?, ?, ?, ?, ?)";
     }
 
     @Override
     protected String getUpdateQuery() {
-        return "UPDATE combo SET name = ?, price = ?, description = ?, status = ?, image_url = ? WHERE id = ?";
+        return "UPDATE combos SET name = ?, price = ?, description = ?, status = ?, image_url = ? WHERE id = ?";
     }
 
     @Override

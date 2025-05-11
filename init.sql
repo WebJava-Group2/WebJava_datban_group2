@@ -56,7 +56,7 @@ CREATE TABLE reservation_table (
 );
 
 -- Tạo bảng combo
-CREATE TABLE combo (
+CREATE TABLE combos (
     id INT PRIMARY KEY AUTO_INCREMENT,
     name VARCHAR(100) NOT NULL,
     price FLOAT NOT NULL,
@@ -66,7 +66,7 @@ CREATE TABLE combo (
 );
 
 -- Tạo bảng food
-CREATE TABLE food (
+CREATE TABLE foods (
     id INT PRIMARY KEY AUTO_INCREMENT,
     name VARCHAR(100) NOT NULL,
     description TEXT NOT NULL,
@@ -82,8 +82,8 @@ CREATE TABLE combo_food (
     combo_id INT NOT NULL,
     food_id INT NOT NULL,
     quantity INT NOT NULL,
-    FOREIGN KEY (combo_id) REFERENCES combo(id),
-    FOREIGN KEY (food_id) REFERENCES food(id)
+    FOREIGN KEY (combo_id) REFERENCES combos(id),
+    FOREIGN KEY (food_id) REFERENCES foods(id)
 );
 
 -- Tạo bảng reservation_food (bảng trung gian)
@@ -93,7 +93,7 @@ CREATE TABLE reservation_food (
     food_id INT NOT NULL,
     quantity INT NOT NULL,
     FOREIGN KEY (reservation_id) REFERENCES reservations(id),
-    FOREIGN KEY (food_id) REFERENCES food(id)
+    FOREIGN KEY (food_id) REFERENCES foods(id)
 );
 
 -- Tạo bảng reservation_combo (bảng trung gian)
@@ -103,7 +103,7 @@ CREATE TABLE reservation_combo (
     combo_id INT NOT NULL,
     quantity INT NOT NULL,
     FOREIGN KEY (reservation_id) REFERENCES reservations(id),
-    FOREIGN KEY (combo_id) REFERENCES combo(id)
+    FOREIGN KEY (combo_id) REFERENCES combos(id)
 ); 
 -- Tạo index giúp query nhanh hơn
 
@@ -123,10 +123,10 @@ CREATE INDEX idx_reservations_customer_id ON reservations(customer_id);
 CREATE INDEX idx_tables_status ON tables(status);
 
 -- Index cho bảng combo (status)
-CREATE INDEX idx_combo_status ON combo(status);
+CREATE INDEX idx_combos_status ON combos(status);
 
 -- Index cho bảng food (status)
-CREATE INDEX idx_food_status ON food(status);
+CREATE INDEX idx_foods_status ON foods(status);
 
 
 -- Chèn dữ liệu mẫu vào bảng users
@@ -148,7 +148,7 @@ INSERT INTO tables (name, capacity, status, location) VALUES
 ('Bàn VIP1', 10, 'available', 'Tầng 3 - Phòng riêng');
 
 -- Chèn dữ liệu mẫu vào bảng food
-INSERT INTO food (name, description, price, image_url, status, meal_type) VALUES
+INSERT INTO foods (name, description, price, image_url, status, meal_type) VALUES
 ('Cà phê đen', 'Cà phê đen nguyên chất, vị đắng đậm đà', 29000, '/images/foods/ca-phe-den.jpg', 'available', 'breakfast'),
 ('Cà phê sữa', 'Cà phê sữa béo ngậy', 35000, '/images/foods/ca-phe-sua.jpg', 'available', 'breakfast'),
 ('Trà sen vàng', 'Trà hương sen thanh mát', 45000, '/images/foods/tra-sen.jpg', 'available', 'lunch'),
@@ -160,7 +160,7 @@ INSERT INTO food (name, description, price, image_url, status, meal_type) VALUES
 ('Bánh pizza hải sản', 'Pizza hải sản phô mai với đế giòn', 150000, '/images/foods/pizza.jpg', 'available', 'dinner'),
 ('Nước cam tươi', 'Nước cam ép tươi 100%', 35000, '/images/foods/nuoc-cam.jpg', 'available', 'breakfast');
 -- Chèn dữ liệu mẫu vào bảng combo
-INSERT INTO combo (name, price, description, status, image_url) VALUES
+INSERT INTO combos (name, price, description, status, image_url) VALUES
 ('Combo cặp đôi', 250000, 'Combo dành cho 2 người gồm 2 món chính, 2 món tráng miệng và 2 đồ uống', 'available', '/images/combos/cap-doi.jpg'),
 ('Combo gia đình', 450000, 'Combo dành cho 4 người gồm 4 món chính, 4 món tráng miệng và 4 đồ uống', 'available', '/images/combos/gia-dinh.jpg'),
 ('Combo tiệc nhỏ', 850000, 'Combo dành cho 8 người gồm 8 món chính, 8 món tráng miệng và 8 đồ uống', 'available', '/images/combos/tiec-nho.jpg');

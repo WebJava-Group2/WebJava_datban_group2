@@ -1,4 +1,4 @@
-package org.datban.webjava.controllers;
+package org.datban.webjava.controllers.admin;
 
 import java.io.*;
 
