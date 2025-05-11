@@ -52,4 +52,51 @@ public class ReservationRepository extends BaseRepository<Reservation, Integer> 
         statement.setTimestamp(6, entity.getCreatedAt());
         statement.setInt(7, entity.getCustomerId());
     }
+
+
+    @Override
+    protected String getTableName() {
+        return "reservations";
+    }
+
+    public List<Reservation> getReservationsByUserId(int userId) throws SQLException {
+        String query = getDisplayQuery() + " WHERE r.user_id = ?";
+        PreparedStatement statement = connection.prepareStatement(query);
+        statement.setInt(1, userId);
+        ResultSet resultSet = statement.executeQuery();
+        
+        List<Reservation> reservations = new ArrayList<>();
+        while (resultSet.next()) {
+            reservations.add(mapResultSetToEntity(resultSet));
+        }
+        return reservations;
+    }
+
+    public List<Reservation> getReservationsByStatus(String status) throws SQLException {
+        String query = getDisplayQuery() + " WHERE r.status = ?";
+        PreparedStatement statement = connection.prepareStatement(query);
+        statement.setString(1, status);
+        ResultSet resultSet = statement.executeQuery();
+        
+        List<Reservation> reservations = new ArrayList<>();
+        while (resultSet.next()) {
+            reservations.add(mapResultSetToEntity(resultSet));
+        }
+        return reservations;
+    }
+
+    public List<Reservation> getReservationsByPage(int page, int itemsPerPage) throws SQLException {
+        return getWithPaginate(page, itemsPerPage);
+    }
+
+    public int getTotalReservations() throws SQLException {
+        String query = "SELECT COUNT(*) FROM " + getTableName();
+        Statement statement = connection.createStatement();
+        ResultSet resultSet = statement.executeQuery(query);
+        
+        if (resultSet.next()) {
+            return resultSet.getInt(1);
+        }
+        return 0;
+    }
 }

@@ -21,7 +21,7 @@ public class FoodService {
 
     // Lấy tất cả món ăn
     public List<Food> getAllFoods() throws SQLException {
-        return foodRepository.getAll();  // Gọi getAll() từ FoodRepository
+        return foodRepository.getAll(); 
     }
 
     // Lấy món ăn sáng

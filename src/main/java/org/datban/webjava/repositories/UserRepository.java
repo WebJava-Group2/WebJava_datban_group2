@@ -50,4 +50,36 @@ public class UserRepository extends BaseRepository<User, Integer> {
         statement.setString(5, entity.getRole());
         statement.setTimestamp(6, entity.getCreatedAt());
     }
+    
+    @Override
+    protected String getTableName() {
+        return "users";
+    }
+
+    public User findByUsername(String username) throws SQLException {
+        String query = getDisplayQuery() + " WHERE username = ?";
+        PreparedStatement statement = connection.prepareStatement(query);
+        statement.setString(1, username);
+        ResultSet resultSet = statement.executeQuery();
+        
+        if (resultSet.next()) {
+            return mapResultSetToEntity(resultSet);
+        }
+        return null;
+    }
+
+    public List<User> getUsersByPage(int page, int itemsPerPage) throws SQLException {
+        return getWithPaginate(page, itemsPerPage);
+    }
+
+    public int getTotalUsers() throws SQLException {
+        String query = "SELECT COUNT(*) FROM " + getTableName();
+        Statement statement = connection.createStatement();
+        ResultSet resultSet = statement.executeQuery(query);
+        
+        if (resultSet.next()) {
+            return resultSet.getInt(1);
+        }
+        return 0;
+    }
 }

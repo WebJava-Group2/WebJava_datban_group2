@@ -48,4 +48,37 @@ public class ComboRepository extends BaseRepository<Combo, Integer> {
         statement.setString(4, entity.getStatus());
         statement.setString(5, entity.getImageUrl());
     }
+
+    @Override
+    protected String getTableName() {
+        return "combos";
+    }
+
+    public List<Combo> getCombosByStatus(String status) throws SQLException {
+        String query = this.getDisplayQuery() + " WHERE status = ?";
+        PreparedStatement statement = connection.prepareStatement(query);
+        statement.setString(1, status);
+        ResultSet resultSet = statement.executeQuery();
+        
+        List<Combo> combos = new ArrayList<>();
+        while (resultSet.next()) {
+            combos.add(mapResultSetToEntity(resultSet));
+        }
+        return combos;
+    }
+
+    public List<Combo> getCombosByPage(int page, int itemsPerPage) throws SQLException {
+        return getWithPaginate(page, itemsPerPage);
+    }
+
+    public int getTotalCombos() throws SQLException {
+        String query = "SELECT COUNT(*) FROM " + getTableName();
+        Statement statement = connection.createStatement();
+        ResultSet resultSet = statement.executeQuery(query);
+        
+        if (resultSet.next()) {
+            return resultSet.getInt(1);
+        }
+        return 0;
+    }
 }

@@ -46,4 +46,37 @@ public class TableRepository extends BaseRepository<Table, Integer> {
         statement.setString(3, entity.getStatus());
         statement.setString(4, entity.getLocation());
     }
+
+    @Override
+    protected String getTableName() {
+        return "tables";
+    }
+
+    public List<Table> getTablesByStatus(String status) throws SQLException {
+        String query = getDisplayQuery() + " WHERE status = ?";
+        PreparedStatement statement = connection.prepareStatement(query);
+        statement.setString(1, status);
+        ResultSet resultSet = statement.executeQuery();
+        
+        List<Table> tables = new ArrayList<>();
+        while (resultSet.next()) {
+            tables.add(mapResultSetToEntity(resultSet));
+        }
+        return tables;
+    }
+
+    public List<Table> getTablesByPage(int page, int itemsPerPage) throws SQLException {
+        return getWithPaginate(page, itemsPerPage);
+    }
+
+    public int getTotalTables() throws SQLException {
+        String query = "SELECT COUNT(*) FROM " + getTableName();
+        Statement statement = connection.createStatement();
+        ResultSet resultSet = statement.executeQuery(query);
+        
+        if (resultSet.next()) {
+            return resultSet.getInt(1);
+        }
+        return 0;
+    }
 }

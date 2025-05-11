@@ -12,7 +12,6 @@ public abstract class BaseRepository<T, ID> implements IBaseRepository<T, ID> {
 
     @Override
     public List<T> getAll() throws SQLException {
-        System.out.println("runhere");
         List<T> resultList = new ArrayList<>();
         String query = getDisplayQuery();
         Statement statement = connection.createStatement();
@@ -26,12 +25,24 @@ public abstract class BaseRepository<T, ID> implements IBaseRepository<T, ID> {
     }
 
     @Override
+    public T getById(ID id) throws SQLException {
+        String query = "SELECT * FROM " + getTableName() + " WHERE id = ?";
+        PreparedStatement statement = connection.prepareStatement(query);
+        statement.setObject(1, id);
+        ResultSet resultSet = statement.executeQuery();
+        if (resultSet.next()) {
+            return mapResultSetToEntity(resultSet);
+        }
+        return null;
+    }
+
+    @Override
     public List<T> getWithPaginate(int page, int size) throws SQLException {
         List<T> resultList = new ArrayList<>();
-        String query = getDisplayQuery();
+        String query = getDisplayQuery() + " LIMIT ? OFFSET ?";
         PreparedStatement statement = connection.prepareStatement(query);
-        statement.setInt(1, size); // size = số bản ghi trên mỗi trang
-        statement.setInt(2, (page - 1) * size); // offset = (số trang - 1) * size
+        statement.setInt(1, size);
+        statement.setInt(2, (page - 1) * size);
         ResultSet resultSet = statement.executeQuery();
 
         while (resultSet.next()) {
@@ -59,15 +70,16 @@ public abstract class BaseRepository<T, ID> implements IBaseRepository<T, ID> {
 
     @Override
     public void delete(ID id) throws SQLException {
-        String query = getDisplayQuery();
+        String query = "DELETE FROM " + getTableName() + " WHERE id = ?";
         PreparedStatement statement = connection.prepareStatement(query);
         statement.setObject(1, id);
         statement.executeUpdate();
     }
 
-    protected abstract String getDisplayQuery(); // Viết các câu serlect
-    protected abstract T mapResultSetToEntity(ResultSet resultSet) throws SQLException; // Chuyển đổi từ ResultSet sang Entity
-    protected abstract String getInsertQuery(); // Truy vấn INSERT
-    protected abstract String getUpdateQuery(); // Truy vấn UPDATE
-    protected abstract void setEntityParameters(PreparedStatement statement, T entity) throws SQLException; // Cài đặt tham số cho câu truy vấn
+    protected abstract String getDisplayQuery();
+    protected abstract T mapResultSetToEntity(ResultSet resultSet) throws SQLException;
+    protected abstract String getInsertQuery();
+    protected abstract String getUpdateQuery();
+    protected abstract void setEntityParameters(PreparedStatement statement, T entity) throws SQLException;
+    protected abstract String getTableName();
 }

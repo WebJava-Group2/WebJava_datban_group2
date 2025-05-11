@@ -1,11 +1,9 @@
 package org.datban.webjava.helpers;
-
 import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Properties;
-
 public class DatabaseConnector {
     private static String DATABASE;
     private static String USERNAME;
@@ -13,11 +11,9 @@ public class DatabaseConnector {
     private static String DB_PORT;
     private static String DB_HOST;
     private static String DB_URL;
-
     static {
         try {
             Properties properties = new Properties();
-            // Đọc file database.properties
             InputStream input = DatabaseConnector.class.getClassLoader().getResourceAsStream("database.properties");
             if (input != null) {
                 properties.load(input);
@@ -26,32 +22,25 @@ public class DatabaseConnector {
                 PASSWORD = properties.getProperty("PASSWORD");
                 DB_PORT = properties.getProperty("DB_PORT");
                 DB_HOST = properties.getProperty("DB_HOST");
-                
-                // Tạo URL kết nối
                 DB_URL = String.format("jdbc:mysql://%s:%s/%s?useSSL=false&serverTimezone=UTC", DB_HOST, DB_PORT, DATABASE);
-
             } else {
                 throw new RuntimeException("Không tìm thấy file database.properties!");
             }
-
             Class.forName("com.mysql.cj.jdbc.Driver");
             System.out.println("JDBC Driver đã được tải thành công!");
-
         } catch (Exception e) {
             System.err.println("Lỗi khi tải driver: " + e.getMessage());
             e.printStackTrace();
         }
     }
-
     public static Connection getConnection() throws SQLException {
         try {
-            // Cố gắng kết nối đến cơ sở dữ liệu
             Connection connection = DriverManager.getConnection(DB_URL, USERNAME, PASSWORD);
             System.out.println("Kết nối thành công!");
             return connection;
         } catch (SQLException e) {
             System.err.println("Kết nối thất bại: " + e.getMessage());
-            throw e; // Ném lại exception để caller có thể xử lý
+            throw e;
         }
     }
 }

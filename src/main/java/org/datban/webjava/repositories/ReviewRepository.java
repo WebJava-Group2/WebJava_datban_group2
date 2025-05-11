@@ -14,8 +14,8 @@ public class ReviewRepository extends BaseRepository<Reviews, Integer> {
 
     @Override
     protected String getDisplayQuery() {
-        return "SELECT id, customer_id, rating, content, created_at " +
-               "FROM reviews";
+        return "SELECT r.id, r.customer_id, r.rating, r.content, r.created_at " +
+               "FROM reviews r";
     }
 
     @Override
@@ -45,5 +45,51 @@ public class ReviewRepository extends BaseRepository<Reviews, Integer> {
         statement.setInt(2, entity.getRating());
         statement.setString(3, entity.getContent());
         statement.setTimestamp(4, entity.getCreatedAt());
+    }
+
+    @Override
+    protected String getTableName() {
+        return "reviews";
+    }
+
+    public List<Reviews> getReviewsByCustomerId(int customerId) throws SQLException {
+        String query = getDisplayQuery() + " WHERE r.customer_id = ?";
+        PreparedStatement statement = connection.prepareStatement(query);
+        statement.setInt(1, customerId);
+        ResultSet resultSet = statement.executeQuery();
+        
+        List<Reviews> reviews = new ArrayList<>();
+        while (resultSet.next()) {
+            reviews.add(mapResultSetToEntity(resultSet));
+        }
+        return reviews;
+    }
+
+    public List<Reviews> getReviewsByRating(int rating) throws SQLException {
+        String query = getDisplayQuery() + " WHERE r.rating = ?";
+        PreparedStatement statement = connection.prepareStatement(query);
+        statement.setInt(1, rating);
+        ResultSet resultSet = statement.executeQuery();
+        
+        List<Reviews> reviews = new ArrayList<>();
+        while (resultSet.next()) {
+            reviews.add(mapResultSetToEntity(resultSet));
+        }
+        return reviews;
+    }
+
+    public List<Reviews> getReviewsByPage(int page, int itemsPerPage) throws SQLException {
+        return getWithPaginate(page, itemsPerPage);
+    }
+
+    public int getTotalReviews() throws SQLException {
+        String query = "SELECT COUNT(*) FROM " + getTableName();
+        Statement statement = connection.createStatement();
+        ResultSet resultSet = statement.executeQuery(query);
+        
+        if (resultSet.next()) {
+            return resultSet.getInt(1);
+        }
+        return 0;
     }
 }
