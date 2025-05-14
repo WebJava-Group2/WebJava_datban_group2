@@ -37,43 +37,86 @@ public class ComboController extends HttpServlet {
         handleShowDetail(request, response, pathInfo);
       }
     } catch (SQLException e) {
-      throw new RuntimeException(e);
+      System.out.println(e.getMessage());
     }
   }
 
-  private void handleListCombos(HttpServletRequest request, HttpServletResponse response) 
+  @Override
+  protected void doPost(HttpServletRequest request, HttpServletResponse response)
+          throws ServletException, IOException {
+    try {
+      String pathInfo = request.getPathInfo();
+      if (pathInfo != null && pathInfo.matches("/\\d+")) {
+        handleUpdateCombo(request, response, pathInfo);
+      } else {
+        handleCreateCombo(request, response);
+      }
+    } catch (Exception e) {
+      System.out.println(e.getMessage());
+    }
+  }
+
+  @Override
+  protected void doDelete(HttpServletRequest request, HttpServletResponse response)
+          throws ServletException, IOException {
+    try {
+      handleDeleteCombo(request, response);
+      response.setStatus(HttpServletResponse.SC_OK);
+    } catch (Exception e) {
+      System.out.println(e.getMessage());
+    }
+  }
+
+  private void handleListCombos(HttpServletRequest request, HttpServletResponse response)
           throws SQLException, ServletException, IOException {
     int currentPage = getCurrentPage(request);
-    int totalItems = comboService.getTotalCombos();
-    int totalPages = (int) Math.ceil((double) totalItems / ITEMS_PER_PAGE);
-    List<Combo> combos = comboService.getCombosByPage(currentPage, ITEMS_PER_PAGE);
+    int itemsPerPage = getItemsPerPage(request);
+    String status = getStatus(request);
 
-    setPaginationAttributes(request, currentPage, totalPages, totalItems);
+    int totalItems;
+    List<Combo> combos;
+
+    if (status != null && !status.equals("all")) {
+      totalItems = comboService.getComboCountByStatus(status);
+      combos = comboService.getCombosByPageAndStatus(currentPage, itemsPerPage, status);
+    } else {
+      totalItems = comboService.getTotalCombos();
+      combos = comboService.getCombosByPage(currentPage, itemsPerPage);
+    }
+
+    int totalPages = (int) Math.ceil((double) totalItems / itemsPerPage);
+
+    setPaginationAttributes(request, currentPage, totalPages, totalItems, itemsPerPage);
     request.setAttribute("combos", combos);
+    request.setAttribute("selectedStatus", status);
+    setTitle(request, "Danh sách combo"); 
     request.getRequestDispatcher("/WEB-INF/views/admin/combos/list.jsp")
             .forward(request, response);
   }
 
-  private void handleShowAddForm(HttpServletRequest request, HttpServletResponse response) 
+  private void handleShowAddForm(HttpServletRequest request, HttpServletResponse response)
           throws ServletException, IOException {
+    setTitle(request, "Thêm combo");
     request.getRequestDispatcher("/WEB-INF/views/admin/combos/add.jsp")
             .forward(request, response);
   }
 
-  private void handleShowEditForm(HttpServletRequest request, HttpServletResponse response, String pathInfo) 
+  private void handleShowEditForm(HttpServletRequest request, HttpServletResponse response, String pathInfo)
           throws SQLException, ServletException, IOException {
     int id = Integer.parseInt(pathInfo.split("/")[1]);
     Combo combo = comboService.getComboById(id);
     request.setAttribute("combo", combo);
+    setTitle(request, "Chỉnh sửa combo " + combo.getName());
     request.getRequestDispatcher("/WEB-INF/views/admin/combos/edit.jsp")
             .forward(request, response);
   }
 
-  private void handleShowDetail(HttpServletRequest request, HttpServletResponse response, String pathInfo) 
+  private void handleShowDetail(HttpServletRequest request, HttpServletResponse response, String pathInfo)
           throws SQLException, ServletException, IOException {
     int id = Integer.parseInt(pathInfo.substring(1));
     Combo combo = comboService.getComboById(id);
     request.setAttribute("combo", combo);
+    setTitle(request, "Combo " + combo.getName());
     request.getRequestDispatcher("/WEB-INF/views/admin/combos/detail.jsp")
             .forward(request, response);
   }
@@ -86,70 +129,65 @@ public class ComboController extends HttpServlet {
     return 1;
   }
 
-  private void setPaginationAttributes(HttpServletRequest request, int currentPage, int totalPages, int totalItems) {
+  private String getStatus(HttpServletRequest request) {
+    String status = request.getParameter("status");
+    if (status == null || status.isEmpty()) {
+      return null;
+    }
+    return status;
+  }
+
+  private int getItemsPerPage(HttpServletRequest request) {
+    String itemsPerPageParam = request.getParameter("itemsPerPage");
+    if (itemsPerPageParam != null && !itemsPerPageParam.isEmpty()) {
+      return Integer.parseInt(itemsPerPageParam);
+    }
+    return ITEMS_PER_PAGE;
+  }
+
+  private void setPaginationAttributes(HttpServletRequest request, int currentPage, int totalPages, int totalItems, int itemsPerPage) {
     request.setAttribute("currentPage", currentPage);
     request.setAttribute("totalPages", totalPages);
     request.setAttribute("totalItems", totalItems);
-    request.setAttribute("itemsPerPage", ITEMS_PER_PAGE);
+    request.setAttribute("itemsPerPage", itemsPerPage);
   }
 
-  @Override
-  protected void doPost(HttpServletRequest request, HttpServletResponse response)
-          throws ServletException, IOException {
-    try {
-      String name = request.getParameter("name");
-      String description = request.getParameter("description");
-      float price = Float.parseFloat(request.getParameter("price"));
-      
-      Combo combo = new Combo();
-      combo.setName(name);
-      combo.setDescription(description);
-      combo.setPrice(price);
-      combo.setStatus("available");
-      comboService.createCombo(combo);
-      response.sendRedirect(request.getContextPath() + "/admin/combos");
-    } catch (SQLException e) {
-      throw new RuntimeException(e);
-    }
+  private void handleCreateCombo(HttpServletRequest request, HttpServletResponse response)
+          throws SQLException, ServletException, IOException {
+    Combo combo = getComboFromRequest(request);
+    comboService.createCombo(combo);
+    response.sendRedirect(request.getContextPath() + "/admin/combos");
   }
 
-  @Override
-  protected void doPut(HttpServletRequest request, HttpServletResponse response)
-          throws ServletException, IOException {
-    try {
-      String pathInfo = request.getPathInfo();
-      int id = Integer.parseInt(pathInfo.substring(1));
-      
-      String name = request.getParameter("name");
-      String description = request.getParameter("description");
-      float price = Float.parseFloat(request.getParameter("price"));
-      String status = request.getParameter("status");
-      
-      Combo combo = new Combo();
-      combo.setId(id);
-      combo.setName(name);
-      combo.setDescription(description);
-      combo.setPrice(price);
-      combo.setStatus(status);
-      
-      comboService.updateCombo(combo);
-      response.sendRedirect(request.getContextPath() + "/admin/combos");
-    } catch (SQLException e) {
-      throw new RuntimeException(e);
-    }
+  private void handleUpdateCombo(HttpServletRequest request, HttpServletResponse response, String pathInfo)
+          throws SQLException, ServletException, IOException {
+    int id = Integer.parseInt(pathInfo.split("/")[1]);
+    Combo combo = getComboFromRequest(request);
+    combo.setId(id);
+    comboService.updateCombo(combo);
+    response.sendRedirect(request.getContextPath() + "/admin/combos");
   }
 
-  @Override
-  protected void doDelete(HttpServletRequest request, HttpServletResponse response)
-          throws ServletException, IOException {
-    try {
-      String pathInfo = request.getPathInfo();
-      int id = Integer.parseInt(pathInfo.substring(1));
-      
-      comboService.deleteCombo(id);
-      response.setStatus(HttpServletResponse.SC_OK);
-    } catch (SQLException e) {
-      throw new RuntimeException(e);
-    }
+  private void handleDeleteCombo(HttpServletRequest request, HttpServletResponse response)
+          throws SQLException, ServletException, IOException {
+    String pathInfo = request.getPathInfo();
+    int id = Integer.parseInt(pathInfo.split("/")[1]);
+    comboService.deleteCombo(id);
+    response.sendRedirect(request.getContextPath() + "/admin/combos");
+  }
+
+  private Combo getComboFromRequest(HttpServletRequest request) {
+    Combo combo = new Combo();
+    combo.setName(request.getParameter("name"));
+    combo.setDescription(request.getParameter("description"));
+    combo.setPrice(Float.parseFloat(request.getParameter("price")));
+    combo.setStatus(request.getParameter("status"));
+    combo.setImageUrl(request.getParameter("imageUrl"));
+
+    return combo;
+  }
+
+  private void setTitle(HttpServletRequest request, String title) {
+    request.setAttribute("title", title);
   }
 }

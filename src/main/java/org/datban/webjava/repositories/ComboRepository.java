@@ -55,18 +55,6 @@ public class ComboRepository extends BaseRepository<Combo, Integer> {
     return "combos";
   }
 
-  public List<Combo> getCombosByStatus(String status) throws SQLException {
-    String query = this.getDisplayQuery() + " WHERE status = ?";
-    PreparedStatement statement = connection.prepareStatement(query);
-    statement.setString(1, status);
-    ResultSet resultSet = statement.executeQuery();
-    List<Combo> combos = new ArrayList<>();
-    while (resultSet.next()) {
-      combos.add(mapResultSetToEntity(resultSet));
-    }
-    return combos;
-  }
-
   public List<Combo> getCombosByPage(int page, int itemsPerPage) throws SQLException {
     return getWithPaginate(page, itemsPerPage);
   }
