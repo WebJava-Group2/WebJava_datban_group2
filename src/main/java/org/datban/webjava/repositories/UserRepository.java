@@ -56,10 +56,10 @@ public class UserRepository extends BaseRepository<User, Integer> {
         return "users";
     }
 
-    public User findByUsername(String username) throws SQLException {
-        String query = getDisplayQuery() + " WHERE username = ?";
+    public User findByEmail(String email) throws SQLException {
+        String query = getDisplayQuery() + " WHERE email = ?";
         PreparedStatement statement = connection.prepareStatement(query);
-        statement.setString(1, username);
+        statement.setString(1, email);
         ResultSet resultSet = statement.executeQuery();
         
         if (resultSet.next()) {
