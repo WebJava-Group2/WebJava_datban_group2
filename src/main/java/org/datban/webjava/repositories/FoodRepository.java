@@ -35,8 +35,8 @@ public class FoodRepository extends BaseRepository<Food, Integer> {
     }
 
     @Override
-    protected String getUpdateQuery() {
-        return "UPDATE foods SET name = ?, price = ?, description = ?, image_url = ?, category_id = ?, status = ? WHERE id = ?";
+    protected String getUpdateQuery(Integer id) {
+        return "UPDATE foods SET name = ?, price = ?, description = ?, image_url = ?, category_id = ?, status = ? WHERE id = " + id;
     }
 
     @Override

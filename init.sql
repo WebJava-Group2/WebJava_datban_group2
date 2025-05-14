@@ -82,8 +82,8 @@ CREATE TABLE combo_food (
     combo_id INT NOT NULL,
     food_id INT NOT NULL,
     quantity INT NOT NULL,
-    FOREIGN KEY (combo_id) REFERENCES combos(id),
-    FOREIGN KEY (food_id) REFERENCES foods(id)
+    FOREIGN KEY (combo_id) REFERENCES combos(id) ON DELETE CASCADE,
+    FOREIGN KEY (food_id) REFERENCES foods(id) ON DELETE CASCADE
 );
 
 -- Tạo bảng reservation_food (bảng trung gian)

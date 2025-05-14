@@ -1,6 +1,8 @@
 package org.datban.webjava.models;
 
-public class ComboFood {
+import org.datban.webjava.models.base.IBaseModel;
+
+public class ComboFood implements IBaseModel<Integer> {
     private Integer id;
     private Integer comboId;
     private Integer foodId;

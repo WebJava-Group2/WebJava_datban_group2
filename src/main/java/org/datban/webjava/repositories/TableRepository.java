@@ -35,8 +35,8 @@ public class TableRepository extends BaseRepository<Table, Integer> {
     }
 
     @Override
-    protected String getUpdateQuery() {
-        return "UPDATE tables SET name = ?, capacity = ?, status = ?, location = ? WHERE id = ?";
+    protected String getUpdateQuery(Integer id) {
+        return "UPDATE tables SET name = ?, capacity = ?, status = ?, location = ? WHERE id = " + id;
     }
 
     @Override

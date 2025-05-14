@@ -49,7 +49,11 @@ public class ComboService implements IComboService {
         comboRepository.delete(id);
     }
 
-    public List<Combo> getCombosByStatus(String status) throws SQLException {
-        return comboRepository.getCombosByStatus(status);
+    public List<Combo> getCombosByPageAndStatus(int page, int itemsPerPage, String status) throws SQLException {
+        return comboRepository.getCombosByPageAndStatus(page, itemsPerPage, status);
+    }
+
+    public int getComboCountByStatus(String status) throws SQLException {
+        return comboRepository.getComboCountByStatus(status);
     }
 }

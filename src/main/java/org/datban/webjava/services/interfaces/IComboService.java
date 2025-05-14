@@ -11,7 +11,8 @@ public interface IComboService {
   void createCombo(Combo combo) throws SQLException;
   void updateCombo(Combo combo) throws SQLException;
   void deleteCombo(int id) throws SQLException;
-  List<Combo> getCombosByStatus(String status) throws SQLException;
   List<Combo> getCombosByPage(int page, int itemsPerPage) throws SQLException;
+  List<Combo> getCombosByPageAndStatus(int page, int itemsPerPage, String status) throws SQLException;
   int getTotalCombos() throws SQLException;
+  int getComboCountByStatus(String status) throws SQLException;
 }

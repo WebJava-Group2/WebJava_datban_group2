@@ -38,8 +38,8 @@ public class ReservationRepository extends BaseRepository<Reservation, Integer> 
     }
 
     @Override
-    protected String getUpdateQuery() {
-        return "UPDATE reservations SET total_people = ?, status = ?, reservation_at = ?, note = ?, total_price = ?, customer_id = ? WHERE id = ?";
+    protected String getUpdateQuery(Integer id) {
+        return "UPDATE reservations SET total_people = ?, status = ?, reservation_at = ?, note = ?, total_price = ?, customer_id = ? WHERE id = " + id;
     }
 
     @Override

@@ -1,6 +1,8 @@
 package org.datban.webjava.models;
 
-public class Combo {
+import org.datban.webjava.models.base.IBaseModel;
+
+public class Combo implements IBaseModel<Integer> {
     private Integer id;
     private String name;
     private Float price;

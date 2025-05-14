@@ -37,8 +37,8 @@ public class UserRepository extends BaseRepository<User, Integer> {
     }
 
     @Override
-    protected String getUpdateQuery() {
-        return "UPDATE users SET name = ?, email = ?, phone = ?, password = ?, role = ? WHERE id = ?";
+    protected String getUpdateQuery(Integer id) {
+        return "UPDATE users SET name = ?, email = ?, phone = ?, password = ?, role = ? WHERE id = " + id;
     }
 
     @Override

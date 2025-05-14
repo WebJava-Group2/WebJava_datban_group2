@@ -11,7 +11,7 @@ pageEncoding="UTF-8" %>
     />
     <meta name="description" content="" />
     <meta name="author" content="" />
-    <title>${param.title} - SB Admin</title>
+    <title>${title}</title>
     <link
       href="https://cdn.jsdelivr.net/npm/simple-datatables@7.1.2/dist/style.min.css"
       rel="stylesheet"

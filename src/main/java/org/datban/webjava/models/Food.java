@@ -1,8 +1,9 @@
 package org.datban.webjava.models;
 
 import java.sql.Timestamp;
+import org.datban.webjava.models.base.IBaseModel;
 
-public class Food {
+public class Food implements IBaseModel<Integer> {
     private Integer id;
     private String name;
     private String description;

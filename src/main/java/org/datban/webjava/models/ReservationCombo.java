@@ -1,6 +1,8 @@
 package org.datban.webjava.models;
 
-public class ReservationCombo {
+import org.datban.webjava.models.base.IBaseModel;
+
+public class ReservationCombo implements IBaseModel<Integer> {
     private Integer id;
     private Integer reservationId;
     private Integer comboId;

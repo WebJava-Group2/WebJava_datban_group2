@@ -35,8 +35,8 @@ public class ReviewRepository extends BaseRepository<Reviews, Integer> {
     }
 
     @Override
-    protected String getUpdateQuery() {
-        return "UPDATE reviews SET customer_id = ?, rating = ?, content = ? WHERE id = ?";
+    protected String getUpdateQuery(Integer id) {
+        return "UPDATE reviews SET customer_id = ?, rating = ?, content = ? WHERE id = " + id;
     }
 
     @Override

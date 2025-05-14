@@ -1,8 +1,9 @@
 package org.datban.webjava.models;
 
 import java.sql.Timestamp;
+import org.datban.webjava.models.base.IBaseModel;
 
-public class Reviews {
+public class Reviews implements IBaseModel<Integer> {
     private Integer id;
     private Integer customerId;
     private Integer rating;

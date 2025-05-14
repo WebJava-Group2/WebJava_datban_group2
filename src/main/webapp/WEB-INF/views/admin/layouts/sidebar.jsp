@@ -5,7 +5,7 @@ pageEncoding="UTF-8" %>
     <div class="sb-sidenav-menu">
       <div class="nav">
         <div class="sb-sidenav-menu-heading">Core</div>
-        <a class="nav-link" href="index.html">
+        <a class="nav-link" href="${pageContext.request.contextPath}/admin">
           <div class="sb-nav-link-icon">
             <i class="fas fa-tachometer-alt"></i>
           </div>
@@ -16,9 +16,9 @@ pageEncoding="UTF-8" %>
           class="nav-link collapsed"
           href="#"
           data-bs-toggle="collapse"
-          data-bs-target="#collapseLayouts"
+          data-bs-target="#adminCombo"
           aria-expanded="false"
-          aria-controls="collapseLayouts"
+          aria-controls="adminCombo"
         >
           <div class="sb-nav-link-icon">
             <i class="fas fa-columns"></i>
@@ -30,13 +30,56 @@ pageEncoding="UTF-8" %>
         </a>
         <div
           class="collapse"
-          id="collapseLayouts"
+          id="adminCombo"
           aria-labelledby="headingOne"
           data-bs-parent="#sidenavAccordion"
         >
           <nav class="sb-sidenav-menu-nested nav">
-            <a class="nav-link" href="${pageContext.request.contextPath}/admin/combos">Danh sách combo</a>
-            <a class="nav-link" href="${pageContext.request.contextPath}/admin/combos/add">Thêm combo</a>
+            <a
+              class="nav-link"
+              href="${pageContext.request.contextPath}/admin/combos"
+              >Danh sách combo</a
+            >
+            <a
+              class="nav-link"
+              href="${pageContext.request.contextPath}/admin/combos/add"
+              >Thêm combo</a
+            >
+          </nav>
+        </div>
+        <a
+          class="nav-link collapsed"
+          href="#"
+          data-bs-toggle="collapse"
+          data-bs-target="#adminFood"
+          aria-expanded="false"
+          aria-controls="adminFood"
+        >
+          <div class="sb-nav-link-icon">
+            <i class="fas fa-columns"></i>
+          </div>
+          Món ăn
+          <div class="sb-sidenav-collapse-arrow">
+            <i class="fas fa-angle-down"></i>
+          </div>
+        </a>
+        <div
+          class="collapse"
+          id="adminFood"
+          aria-labelledby="headingOne"
+          data-bs-parent="#sidenavAccordion"
+        >
+          <nav class="sb-sidenav-menu-nested nav">
+            <a
+              class="nav-link"
+              href="${pageContext.request.contextPath}/admin/foods"
+              >Danh sách món ăn</a
+            >
+            <a
+              class="nav-link"
+              href="${pageContext.request.contextPath}/admin/foods/add"
+              >Thêm món ăn</a
+            >
           </nav>
         </div>
       </div>

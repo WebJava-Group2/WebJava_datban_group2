@@ -1,6 +1,8 @@
 package org.datban.webjava.models;
 
-public class Table {
+import org.datban.webjava.models.base.IBaseModel;
+
+public class Table implements IBaseModel<Integer> {
     private Integer id;
     private String name;
     private Integer capacity;
