@@ -130,12 +130,13 @@ CREATE INDEX idx_foods_status ON foods(status);
 
 
 -- Chèn dữ liệu mẫu vào bảng users
+-- password: 12345678
 INSERT INTO users (name, email, phone, password, role, created_at) VALUES
-('Admin User', 'admin@webjava.com', '0901234567', '$2a$10$xzCxX7c1K7NrLzGlzRYsT.6CY0qOXmEf3F1sOVB5CY8hBja8gEBqG', 'admin', NOW()),
-('Staff User', 'staff@webjava.com', '0909876543', '$2a$10$dEvXs7xKPB.MmOtZw9xV6.Qgr7aaGF0Hl8v/JRJDvM/xZ1QnNQFbO', 'admin', NOW()),
-('Customer 1', 'customer1@gmail.com', '0912345678', '$2a$10$1JxD1GP5r.HQfEPd0jO1tuH45L95M6qVJ5B4zx83YGVpOF02MsM2O', 'customer', NOW()),
-('Customer 2', 'customer2@gmail.com', '0923456789', '$2a$10$mEE9HrKhPRK5MrMjgQ4DqePvEBHzLPJCgw.fkWIyL18M4CjSP17ju', 'customer', NOW()),
-('Customer 3', 'customer3@gmail.com', '0934567890', '$2a$10$7VZvs1yvFT9M7R9G.gsCUuq2.6gVLI.jxwjLdpvJ/UVJecXfEP0.O', 'customer', NOW());
+('Admin User', 'admin@gmail.com', '0901234567', '$2a$10$TFMxVkNGnp/ei5kx/N7OVed7d9G.cs5rLkdKjGoQ1qXfhC91BBGc6', 'admin', NOW()),
+('Staff User', 'staff@gmail.com', '0909876543', '$2a$10$TFMxVkNGnp/ei5kx/N7OVed7d9G.cs5rLkdKjGoQ1qXfhC91BBGc6', 'admin', NOW()),
+('Customer 1', 'customer1@gmail.com', '0912345678', '$2a$10$TFMxVkNGnp/ei5kx/N7OVed7d9G.cs5rLkdKjGoQ1qXfhC91BBGc6', 'customer', NOW()),
+('Customer 2', 'customer2@gmail.com', '0923456789', '$2a$10$TFMxVkNGnp/ei5kx/N7OVed7d9G.cs5rLkdKjGoQ1qXfhC91BBGc6', 'customer', NOW()),
+('Customer 3', 'customer3@gmail.com', '0934567890', '$2a$10$TFMxVkNGnp/ei5kx/N7OVed7d9G.cs5rLkdKjGoQ1qXfhC91BBGc6', 'customer', NOW());
 
 -- Chèn dữ liệu mẫu vào bảng tables
 INSERT INTO tables (name, capacity, status, location) VALUES
@@ -149,21 +150,21 @@ INSERT INTO tables (name, capacity, status, location) VALUES
 
 -- Chèn dữ liệu mẫu vào bảng food
 INSERT INTO foods (name, description, price, image_url, status, meal_type) VALUES
-('Cà phê đen', 'Cà phê đen nguyên chất, vị đắng đậm đà', 29000, '/images/foods/ca-phe-den.jpg', 'available', 'breakfast'),
-('Cà phê sữa', 'Cà phê sữa béo ngậy', 35000, '/images/foods/ca-phe-sua.jpg', 'available', 'breakfast'),
-('Trà sen vàng', 'Trà hương sen thanh mát', 45000, '/images/foods/tra-sen.jpg', 'available', 'lunch'),
-('Bánh flan', 'Bánh flan mềm mịn với caramel', 25000, '/images/foods/banh-flan.jpg', 'available', 'dessert'),
-('Salad trộn', 'Salad rau củ tươi ngon với sốt đặc biệt', 65000, '/images/foods/salad.jpg', 'available', 'lunch'),
-('Mì Ý sốt bò bằm', 'Mì Ý với sốt bò bằm đậm đà', 85000, '/images/foods/mi-y.jpg', 'available', 'lunch'),
-('Gà nướng', 'Gà nướng nguyên con với sốt BBQ', 250000, '/images/foods/ga-nuong.jpg', 'available', 'dinner'),
-('Bò bít tết', 'Bò bít tết Úc kèm khoai tây chiên', 180000, '/images/foods/bo-bit-tet.jpg', 'available', 'dinner'),
-('Bánh pizza hải sản', 'Pizza hải sản phô mai với đế giòn', 150000, '/images/foods/pizza.jpg', 'available', 'dinner'),
-('Nước cam tươi', 'Nước cam ép tươi 100%', 35000, '/images/foods/nuoc-cam.jpg', 'available', 'breakfast');
+('Cà phê đen', 'Cà phê đen nguyên chất, vị đắng đậm đà', 29000, 'https://picsum.photos/seed/food1/200', 'available', 'breakfast'),
+('Cà phê sữa', 'Cà phê sữa béo ngậy', 35000, 'https://picsum.photos/seed/food2/200', 'available', 'breakfast'),
+('Trà sen vàng', 'Trà hương sen thanh mát', 45000, 'https://picsum.photos/seed/food3/200', 'available', 'lunch'),
+('Bánh flan', 'Bánh flan mềm mịn với caramel', 25000, 'https://picsum.photos/seed/food4/200', 'unavailable', 'dessert'),
+('Salad trộn', 'Salad rau củ tươi ngon với sốt đặc biệt', 65000, 'https://picsum.photos/seed/food5/200', 'available', 'lunch'),
+('Mì Ý sốt bò bằm', 'Mì Ý với sốt bò bằm đậm đà', 85000, 'https://picsum.photos/seed/food6/200', 'available', 'lunch'),
+('Gà nướng', 'Gà nướng nguyên con với sốt BBQ', 250000, 'https://picsum.photos/seed/food7/200', 'available', 'dinner'),
+('Bò bít tết', 'Bò bít tết Úc kèm khoai tây chiên', 180000, 'https://picsum.photos/seed/food7/200', 'unavailable', 'dinner'),
+('Bánh pizza hải sản', 'Pizza hải sản phô mai với đế giòn', 150000, 'https://picsum.photos/seed/food8/200', 'available', 'dinner'),
+('Nước cam tươi', 'Nước cam ép tươi 100%', 35000, 'https://picsum.photos/seed/food9/200', 'available', 'breakfast');
 -- Chèn dữ liệu mẫu vào bảng combo
 INSERT INTO combos (name, price, description, status, image_url) VALUES
-('Combo cặp đôi', 250000, 'Combo dành cho 2 người gồm 2 món chính, 2 món tráng miệng và 2 đồ uống', 'available', '/images/combos/cap-doi.jpg'),
-('Combo gia đình', 450000, 'Combo dành cho 4 người gồm 4 món chính, 4 món tráng miệng và 4 đồ uống', 'available', '/images/combos/gia-dinh.jpg'),
-('Combo tiệc nhỏ', 850000, 'Combo dành cho 8 người gồm 8 món chính, 8 món tráng miệng và 8 đồ uống', 'available', '/images/combos/tiec-nho.jpg');
+('Combo cặp đôi', 250000, 'Combo dành cho 2 người gồm 2 món chính, 2 món tráng miệng và 2 đồ uống', 'available', 'https://picsum.photos/seed/combo1/200'),
+('Combo gia đình', 450000, 'Combo dành cho 4 người gồm 4 món chính, 4 món tráng miệng và 4 đồ uống', 'available', 'https://picsum.photos/seed/combo2/200'),
+('Combo tiệc nhỏ', 850000, 'Combo dành cho 8 người gồm 8 món chính, 8 món tráng miệng và 8 đồ uống', 'available', 'https://picsum.photos/seed/combo3/200');
 
 -- Chèn dữ liệu mẫu vào bảng combo_food
 INSERT INTO combo_food (combo_id, food_id, quantity) VALUES
