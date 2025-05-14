@@ -14,7 +14,7 @@ public class FoodRepository extends BaseRepository<Food, Integer> {
 
     @Override
     protected String getDisplayQuery() {
-        return "SELECT id, name, price, description, image_url, category_id, status " +
+        return "SELECT id, name, price, description, image_url, status " +
                "FROM foods";
     }
 
@@ -31,12 +31,12 @@ public class FoodRepository extends BaseRepository<Food, Integer> {
     }
     @Override
     protected String getInsertQuery() {
-        return "INSERT INTO foods (name, price, description, image_url, category_id, status) VALUES (?, ?, ?, ?, ?, ?)";
+        return "INSERT INTO foods (name, price, description, image_url, status) VALUES (?, ?, ?, ?, ?)";
     }
 
     @Override
     protected String getUpdateQuery() {
-        return "UPDATE foods SET name = ?, price = ?, description = ?, image_url = ?, category_id = ?, status = ? WHERE id = ?";
+        return "UPDATE foods SET name = ?, price = ?, description = ?, image_url = ?, status = ? WHERE id = ?";
     }
 
     @Override

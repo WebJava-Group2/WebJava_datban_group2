@@ -10,7 +10,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.datban.webjava.services.FoodService;
 
-@WebServlet(name="homeServlet", urlPatterns = {"/foods"})
+@WebServlet(name="homeServlet", urlPatterns = {"/client/foods"})
 public class FoodController extends HttpServlet{
     private final FoodService foodService = new FoodService();
     @Override
@@ -21,11 +21,10 @@ public class FoodController extends HttpServlet{
             req.setAttribute("foodslu", foodService.getLunch());
             req.setAttribute("foodsdn", foodService.getDinner());
             System.out.println("ok");
-            req.getRequestDispatcher("/index.jsp").forward(req, resp);
+            req.getRequestDispatcher("/WEB-INF/views/client/index1.jsp").forward(req, resp);
         } catch (SQLException ex) {
             Logger.getLogger(FoodController.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-
 }
 

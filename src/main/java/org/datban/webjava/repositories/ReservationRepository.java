@@ -99,4 +99,31 @@ public class ReservationRepository extends BaseRepository<Reservation, Integer> 
         }
         return 0;
     }
+    //other method
+    public int insertReservatation(Reservation reservation)throws SQLException{
+        String query = "INSERT INTO reservation(totalPeople, status, reservationAt, note, totalPrice, createdAt, customerId) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        int isSuccess = 0;
+        try {
+            PreparedStatement preparedStatement = connection.prepareStatement(query);
+            preparedStatement.setInt(1, reservation.getTotalPeople());
+            preparedStatement.setString(2, reservation.getStatus());
+            preparedStatement.setTimestamp(3, reservation.getReservationAt());
+            preparedStatement.setString(4, reservation.getNote());
+            preparedStatement.setFloat(5, reservation.getTotalPrice());
+            preparedStatement.setTimestamp(6, new Timestamp(System.currentTimeMillis()));
+            preparedStatement.setInt(7, reservation.getCustomerId());
+            isSuccess=preparedStatement.executeUpdate();
+        }catch(Exception e){
+            e.printStackTrace();
+        }finally {
+            try {
+                if (connection!=null) {
+                    connection.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        return isSuccess;
+    }
 }

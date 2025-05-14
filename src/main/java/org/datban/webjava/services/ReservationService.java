@@ -22,4 +22,8 @@ public class ReservationService {
     public List<Reservation> getAllReservations() throws SQLException {
         return reservationRepository.getAll();
     }
+
+    public boolean createReservation(Reservation reservation) throws SQLException {
+        return reservationRepository.insertReservatation(reservation)>0;
+    }
 }
