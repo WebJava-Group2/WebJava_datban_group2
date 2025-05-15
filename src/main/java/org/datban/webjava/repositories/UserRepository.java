@@ -152,4 +152,23 @@ public class UserRepository extends BaseRepository<User, Integer> {
         }
         return false;
     }
+
+    public int createUser(User user) throws SQLException {
+        String query = getInsertQuery();
+        PreparedStatement statement = connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
+        setInsertParameters(statement, user);
+        
+        int affectedRows = statement.executeUpdate();
+        if (affectedRows == 0) {
+            throw new SQLException("Creating user failed, no rows affected.");
+        }
+
+        try (ResultSet generatedKeys = statement.getGeneratedKeys()) {
+            if (generatedKeys.next()) {
+                return generatedKeys.getInt(1);
+            } else {
+                throw new SQLException("Creating user failed, no ID obtained.");
+            }
+        }
+    }
 }

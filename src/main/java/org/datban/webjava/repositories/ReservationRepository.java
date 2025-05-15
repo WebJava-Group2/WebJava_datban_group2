@@ -53,10 +53,9 @@ public class ReservationRepository extends BaseRepository<Reservation, Integer> 
         statement.setInt(7, entity.getCustomerId());
     }
 
-
     @Override
     protected String getTableName() {
-        return "reservations";
+        return "reservation";
     }
 
     public List<Reservation> getReservationsByUserId(int userId) throws SQLException {
@@ -98,5 +97,78 @@ public class ReservationRepository extends BaseRepository<Reservation, Integer> 
             return resultSet.getInt(1);
         }
         return 0;
+    }
+
+    public int createReservation(int userId, Timestamp reservationDateTime,
+                               int numberOfPeople, String note, double total) {
+        String sql = "INSERT INTO reservation (user_id, reservation_at, " +
+                    "number_of_people, note, total, status) VALUES (?, ?, ?, ?, ?, 'pending')";
+        try {
+            PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+            statement.setInt(1, userId);
+            statement.setTimestamp(2, reservationDateTime);
+            statement.setInt(3, numberOfPeople);
+            statement.setString(4, note);
+            statement.setDouble(5, total);
+
+            int affectedRows = statement.executeUpdate();
+            if (affectedRows == 0) {
+                throw new SQLException("Creating reservation failed, no rows affected.");
+            }
+
+            try (ResultSet generatedKeys = statement.getGeneratedKeys()) {
+                if (generatedKeys.next()) {
+                    return generatedKeys.getInt(1);
+                } else {
+                    throw new SQLException("Creating reservation failed, no ID obtained.");
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return -1;
+        }
+    }
+
+    public void createReservationFood(int reservationId, int foodId, int quantity) {
+        String sql = "INSERT INTO reservation_food (reservation_id, food_id, quantity) VALUES (?, ?, ?)";
+        try {
+            PreparedStatement statement = connection.prepareStatement(sql);
+            statement.setInt(1, reservationId);
+            statement.setInt(2, foodId);
+            statement.setInt(3, quantity);
+            statement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public double getFoodPrice(int foodId) {
+        String sql = "SELECT price FROM food WHERE id = ?";
+        try {
+            PreparedStatement statement = connection.prepareStatement(sql);
+            statement.setInt(1, foodId);
+            ResultSet rs = statement.executeQuery();
+            if (rs.next()) {
+                return rs.getDouble("price");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0.0;
+    }
+
+    public int getFoodIdByName(String foodName) {
+        String sql = "SELECT id FROM food WHERE name = ?";
+        try {
+            PreparedStatement statement = connection.prepareStatement(sql);
+            statement.setString(1, foodName);
+            ResultSet rs = statement.executeQuery();
+            if (rs.next()) {
+                return rs.getInt("id");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return -1;
     }
 }
