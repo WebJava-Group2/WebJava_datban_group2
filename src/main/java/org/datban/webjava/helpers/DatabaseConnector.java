@@ -22,7 +22,7 @@ public class DatabaseConnector {
                 PASSWORD = properties.getProperty("PASSWORD");
                 DB_PORT = properties.getProperty("DB_PORT");
                 DB_HOST = properties.getProperty("DB_HOST");
-                DB_URL = String.format("jdbc:mysql://%s:%s/%s?useSSL=false&serverTimezone=UTC", DB_HOST, DB_PORT, DATABASE);
+                DB_URL = String.format("jdbc:mysql://%s:%s/%s?useSSL=false&serverTimezone=UTC&useUnicode=true&characterEncoding=UTF-8", DB_HOST, DB_PORT, DATABASE);
             } else {
                 throw new RuntimeException("Không tìm thấy file database.properties!");
             }
