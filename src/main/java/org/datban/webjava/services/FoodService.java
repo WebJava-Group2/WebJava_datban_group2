@@ -93,4 +93,14 @@ public class FoodService {
   public int getFoodCountByMealType(String mealType) throws SQLException {
     return foodRepository.getFoodCountByMealType(mealType);
   }
+
+  // Lấy 6 món ăn đầu tiên cho phần gợi ý
+  public List<Food> getFirst6Foods() throws SQLException {
+    return foodRepository.getFirst6Foods();
+  }
+
+  // Lấy 6 món ăn theo loại bữa
+  public List<Food> get6FoodsByMealType(String mealType) throws SQLException {
+    return foodRepository.get6FoodsByMealType(mealType);
+  }
 }

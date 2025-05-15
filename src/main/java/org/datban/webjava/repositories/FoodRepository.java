@@ -159,4 +159,36 @@ public class FoodRepository extends BaseRepository<Food, Integer> {
         }
         return 0;
     }
+
+    // Lấy 6 món ăn đầu tiên cho phần gợi ý
+    public List<Food> getFirst6Foods() throws SQLException {
+        List<Food> foods = new ArrayList<>();
+        String query = "SELECT * FROM foods WHERE status = 'available' LIMIT 6";
+        
+        try (PreparedStatement statement = connection.prepareStatement(query);
+             ResultSet resultSet = statement.executeQuery()) {
+            
+            while (resultSet.next()) {
+                foods.add(mapResultSetToEntity(resultSet));
+            }
+        }
+        return foods;
+    }
+
+    // Lấy 6 món ăn theo loại bữa (breakfast, lunch, dinner)
+    public List<Food> get6FoodsByMealType(String mealType) throws SQLException {
+        List<Food> foods = new ArrayList<>();
+        String query = "SELECT * FROM foods WHERE status = 'available' AND meal_type = ? LIMIT 6";
+        
+        try (PreparedStatement statement = connection.prepareStatement(query)) {
+            statement.setString(1, mealType);
+            
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    foods.add(mapResultSetToEntity(resultSet));
+                }
+            }
+        }
+        return foods;
+    }
 }
