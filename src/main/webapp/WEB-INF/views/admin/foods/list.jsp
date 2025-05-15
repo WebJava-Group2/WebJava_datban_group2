@@ -131,17 +131,18 @@ file="../layouts/header.jsp" %> <%@ include file="../layouts/sidebar.jsp" %>
                   <a
                     href="${pageContext.request.contextPath}/admin/foods/${food.id}/edit"
                     class="btn btn-warning d-flex justify-content-center align-items-center mx-auto"
-                    style="width: 100px; height: 38px; color: #282727"
-                    >Sửa</a
+                    style="width: fit-content; height: 38px; color: #282727"
                   >
+                    <i class="fas fa-edit"></i>
+                  </a>
                 </td>
                 <td class="text-center align-middle">
                   <button
                     onclick="deleteFood('${food.id}')"
                     class="btn btn-danger d-flex justify-content-center align-items-center mx-auto"
-                    style="width: 100px; height: 38px;"
+                    style="width: fit-content; height: 38px;"
                   >
-                    Xóa
+                    <i class="fas fa-trash"></i>
                   </button>
                 </td>
               </tr>

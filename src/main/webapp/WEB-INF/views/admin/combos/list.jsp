@@ -103,18 +103,19 @@ file="../layouts/header.jsp" %> <%@ include file="../layouts/sidebar.jsp" %>
                 <td class="text-center align-middle">
                   <a
                     href="${pageContext.request.contextPath}/admin/combos/${combo.id}/edit"
-                    class="btn btn-warning d-flex justify-content-center align-items-center mx-auto"
-                    style="width: 100px; height: 38px; color: #282727"
-                    >Sửa</a
+                    class="btn btn-warning d-flex justify-content-center align-items-center mx-auto w-fit"
+                    style="width: fit-content; height: 38px; color: #282727"
                   >
+                    <i class="fas fa-edit"></i>
+                  </a>
                 </td>
                 <td class="text-center align-middle">
                   <button
                     onclick="deleteCombo('${combo.id}')"
-                    class="btn btn-danger d-flex justify-content-center align-items-center mx-auto"
-                    style="width: 100px; height: 38px;"
+                    class="btn btn-danger d-flex justify-content-center align-items-center mx-auto w-fit"
+                    style="width: fit-content; height: 38px;"
                   >
-                    Xóa
+                    <i class="fas fa-trash"></i>
                   </button>
                 </td>
               </tr>
