@@ -92,10 +92,21 @@ public class FoodController extends HttpServlet {
 
     int totalPages = (int) Math.ceil((double) totalItems / itemsPerPage);
 
+    // Lấy message và error từ session
+    HttpSession session = request.getSession();
+    String message = (String) session.getAttribute("message");
+    String error = (String) session.getAttribute("error");
+    
+    // Xóa message và error khỏi session sau khi đã lấy
+    session.removeAttribute("message");
+    session.removeAttribute("error");
+
     setPaginationAttributes(request, currentPage, totalPages, totalItems, itemsPerPage);
     request.setAttribute("foods", foods);
     request.setAttribute("selectedMealType", mealType);
     request.setAttribute("selectedStatus", status);
+    request.setAttribute("message", message);
+    request.setAttribute("error", error);
     setTitle(request, "Danh sách món ăn");
     request.getRequestDispatcher("/WEB-INF/views/admin/foods/list.jsp")
             .forward(request, response);
@@ -169,26 +180,50 @@ public class FoodController extends HttpServlet {
 
   private void handleCreateFood(HttpServletRequest request, HttpServletResponse response)
           throws SQLException, ServletException, IOException {
-    Food food = getFoodFromRequest(request);
-    foodService.createFood(food);
-    response.sendRedirect(request.getContextPath() + "/admin/foods");
+    HttpSession session = request.getSession();
+    try {
+      Food food = getFoodFromRequest(request);
+      foodService.createFood(food);
+      session.setAttribute("message", "Thêm món ăn thành công");
+      response.sendRedirect(request.getContextPath() + "/admin/foods");
+    } catch (Exception e) {
+      System.out.println(e.getMessage());
+      session.setAttribute("error", "Thêm món ăn thất bại");
+      response.sendRedirect(request.getContextPath() + "/admin/foods/add");
+    }
   }
 
   private void handleUpdateFood(HttpServletRequest request, HttpServletResponse response, String pathInfo)
           throws SQLException, ServletException, IOException {
+    HttpSession session = request.getSession();
     int id = Integer.parseInt(pathInfo.split("/")[1]);
-    Food food = getFoodFromRequest(request);
-    food.setId(id);
-    foodService.updateFood(food);
-    response.sendRedirect(request.getContextPath() + "/admin/foods");
+    try {
+      Food food = getFoodFromRequest(request);
+      food.setId(id);
+      foodService.updateFood(food);
+      session.setAttribute("message", "Cập nhật món ăn thành công");
+      response.sendRedirect(request.getContextPath() + "/admin/foods");
+    } catch (Exception e) {
+      System.out.println(e.getMessage());
+      session.setAttribute("error", "Cập nhật món ăn thất bại");
+      response.sendRedirect(request.getContextPath() + "/admin/foods/" + id + "/edit");
+    }
   }
 
   private void handleDeleteFood(HttpServletRequest request, HttpServletResponse response)
           throws SQLException, ServletException, IOException {
+    HttpSession session = request.getSession();
     String pathInfo = request.getPathInfo();
     int id = Integer.parseInt(pathInfo.split("/")[1]);
-    foodService.deleteFood(id);
-    response.sendRedirect(request.getContextPath() + "/admin/foods");
+    try {
+      foodService.deleteFood(id);
+      session.setAttribute("message", "Xóa món ăn thành công");
+      response.sendRedirect(request.getContextPath() + "/admin/foods");
+    } catch (Exception e) {
+      System.out.println(e.getMessage());
+      session.setAttribute("error", "Xóa món ăn thất bại");
+      response.sendRedirect(request.getContextPath() + "/admin/foods");
+    }
   }
 
   private Food getFoodFromRequest(HttpServletRequest request) {

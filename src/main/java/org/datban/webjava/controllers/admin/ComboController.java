@@ -86,9 +86,20 @@ public class ComboController extends HttpServlet {
 
     int totalPages = (int) Math.ceil((double) totalItems / itemsPerPage);
 
+    // Lấy message và error từ session
+    HttpSession session = request.getSession();
+    String message = (String) session.getAttribute("message");
+    String error = (String) session.getAttribute("error");
+    
+    // Xóa message và error khỏi session sau khi đã lấy
+    session.removeAttribute("message");
+    session.removeAttribute("error");
+
     setPaginationAttributes(request, currentPage, totalPages, totalItems, itemsPerPage);
     request.setAttribute("combos", combos);
     request.setAttribute("selectedStatus", status);
+    request.setAttribute("message", message);
+    request.setAttribute("error", error);
     setTitle(request, "Danh sách combo"); 
     request.getRequestDispatcher("/WEB-INF/views/admin/combos/list.jsp")
             .forward(request, response);
@@ -154,26 +165,50 @@ public class ComboController extends HttpServlet {
 
   private void handleCreateCombo(HttpServletRequest request, HttpServletResponse response)
           throws SQLException, ServletException, IOException {
-    Combo combo = getComboFromRequest(request);
-    comboService.createCombo(combo);
-    response.sendRedirect(request.getContextPath() + "/admin/combos");
+    HttpSession session = request.getSession();
+    try {
+      Combo combo = getComboFromRequest(request);
+      comboService.createCombo(combo);
+      session.setAttribute("message", "Thêm combo thành công");
+      response.sendRedirect(request.getContextPath() + "/admin/combos");
+    } catch (Exception e) {
+      System.out.println(e.getMessage());
+      session.setAttribute("error", "Thêm combo thất bại");
+      response.sendRedirect(request.getContextPath() + "/admin/combos/add");
+    }
   }
 
   private void handleUpdateCombo(HttpServletRequest request, HttpServletResponse response, String pathInfo)
           throws SQLException, ServletException, IOException {
+    HttpSession session = request.getSession();
     int id = Integer.parseInt(pathInfo.split("/")[1]);
-    Combo combo = getComboFromRequest(request);
-    combo.setId(id);
-    comboService.updateCombo(combo);
-    response.sendRedirect(request.getContextPath() + "/admin/combos");
+    try {
+      Combo combo = getComboFromRequest(request);
+      combo.setId(id);
+      comboService.updateCombo(combo);
+      session.setAttribute("message", "Cập nhật combo thành công");
+      response.sendRedirect(request.getContextPath() + "/admin/combos");
+    } catch (Exception e) {
+      System.out.println(e.getMessage());
+      session.setAttribute("error", "Cập nhật combo thất bại");
+      response.sendRedirect(request.getContextPath() + "/admin/combos/" + id + "/edit");
+    }
   }
 
   private void handleDeleteCombo(HttpServletRequest request, HttpServletResponse response)
           throws SQLException, ServletException, IOException {
+    HttpSession session = request.getSession();
     String pathInfo = request.getPathInfo();
     int id = Integer.parseInt(pathInfo.split("/")[1]);
-    comboService.deleteCombo(id);
-    response.sendRedirect(request.getContextPath() + "/admin/combos");
+    try {
+      comboService.deleteCombo(id);
+      session.setAttribute("message", "Xóa combo thành công");
+      response.sendRedirect(request.getContextPath() + "/admin/combos");
+    } catch (Exception e) {
+      System.out.println(e.getMessage());
+      session.setAttribute("error", "Xóa combo thất bại");
+      response.sendRedirect(request.getContextPath() + "/admin/combos");
+    }
   }
 
   private Combo getComboFromRequest(HttpServletRequest request) {

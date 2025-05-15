@@ -10,6 +10,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.*;
 import javax.servlet.annotation.*;
 import java.sql.SQLException;
+import java.util.HashMap;
 import java.util.List;
 
 @WebServlet("/admin/users/*")
@@ -91,10 +92,23 @@ public class UserController extends HttpServlet {
 
     int totalPages = (int) Math.ceil((double) totalItems / itemsPerPage);
 
+    // Lấy message và error từ session
+    HttpSession session = request.getSession();
+    String message = (String) session.getAttribute("message");
+    String error = (String) session.getAttribute("error");
+    
+    // Xóa message và error khỏi session sau khi đã lấy
+    session.removeAttribute("message");
+    session.removeAttribute("error");
+
+    // Set attributes
     setPaginationAttributes(request, currentPage, totalPages, totalItems, itemsPerPage);
     request.setAttribute("users", users);
     request.setAttribute("selectedRole", role);
+    request.setAttribute("message", message);
+    request.setAttribute("error", error);
     setTitle(request, "Danh sách người dùng");
+    
     request.getRequestDispatcher("/WEB-INF/views/admin/users/list.jsp")
             .forward(request, response);
   }
@@ -108,9 +122,17 @@ public class UserController extends HttpServlet {
 
   private void handleShowEditForm(HttpServletRequest request, HttpServletResponse response, String pathInfo)
           throws SQLException, ServletException, IOException {
+    HttpSession session = request.getSession();
     int id = Integer.parseInt(pathInfo.split("/")[1]);
     User user = userService.getUserById(id);
+
     request.setAttribute("user", user);
+    request.setAttribute("fieldErrors", session.getAttribute("fieldErrors"));
+    request.setAttribute("error", session.getAttribute("error"));
+
+    session.removeAttribute("error");
+    session.removeAttribute("fieldErrors");
+
     setTitle(request, "Chỉnh sửa người dùng " + user.getName());
     request.getRequestDispatcher("/WEB-INF/views/admin/users/edit.jsp")
             .forward(request, response);
@@ -159,24 +181,28 @@ public class UserController extends HttpServlet {
 
   private void handleCreateUser(HttpServletRequest request, HttpServletResponse response)
           throws SQLException, ServletException, IOException {
+    HttpSession session = request.getSession();
     User user = getUserFromRequest(request);
-    // Hash password
     String password = request.getParameter("password");
     String hashedPassword = hashedHelper.hashPassword(password);
     user.setPassword(hashedPassword);
-    // Set createdAt
     user.setCreatedAt(new Timestamp(System.currentTimeMillis()));
-    // Create user
-    userService.createUser(user);
-    // Redirect to list users
-    response.sendRedirect(request.getContextPath() + "/admin/users");
+    try {
+      userService.createUser(user);
+      session.setAttribute("message", "Thêm người dùng thành công");
+      response.sendRedirect(request.getContextPath() + "/admin/users");
+    } catch (Exception e) {
+      System.out.println(e.getMessage());
+      session.setAttribute("error", "Thêm người dùng thất bại");
+      response.sendRedirect(request.getContextPath() + "/admin/users");
+    }
   }
 
   private void handleUpdateUser(HttpServletRequest request, HttpServletResponse response, String pathInfo)
           throws SQLException, ServletException, IOException {
-    int id = Integer.parseInt(pathInfo.split("/")[1]);
+    HttpSession session = request.getSession();
     User user = getUserFromRequest(request);
-    // Set id
+    int id = Integer.parseInt(pathInfo.split("/")[1]);
     user.setId(id);
     if (userService.checkEmailExist(user)) {
       session.setAttribute("error", "Email đã tồn tại");
@@ -190,17 +216,21 @@ public class UserController extends HttpServlet {
     }
     String password = request.getParameter("password");
     if (password != null && !password.trim().isEmpty()) {
-      // If password is not empty, hash it
       String hashedPassword = hashedHelper.hashPassword(password);
       user.setPassword(hashedPassword);
     } else {
-      // If password is empty, get the password from the database
       User existingUser = userService.getUserById(id);
       user.setPassword(existingUser.getPassword());
     }
-    // Update user
-    userService.updateUser(user);
-    response.sendRedirect(request.getContextPath() + "/admin/users");
+    try {
+      userService.updateUser(user);
+      session.setAttribute("message", "Cập nhật người dùng thành công");
+      response.sendRedirect(request.getContextPath() + "/admin/users");
+    } catch (Exception e) {
+      System.out.println(e.getMessage());
+      session.setAttribute("error", "Cập nhật người dùng thất bại");
+      response.sendRedirect(request.getContextPath() + "/admin/users/" + id + "/edit");
+    }
   }
 
   private void handleDeleteUser(HttpServletRequest request, HttpServletResponse response)
@@ -213,15 +243,20 @@ public class UserController extends HttpServlet {
     User currentUser = (User) session.getAttribute("adminUser");
 
     if (currentUser != null && currentUser.getId() == id) {
-      request.setAttribute("error", "Không thể xóa tài khoản đang đăng nhập");
-      request.getRequestDispatcher("/WEB-INF/views/admin/users/list.jsp")
-              .forward(request, response);
+      session.setAttribute("error", "Không thể xóa tài khoản đang đăng nhập");
+      response.sendRedirect(request.getContextPath() + "/admin/users");
       return;
     }
-    userService.deleteUser(id);
-    request.setAttribute("message", "Xóa người dùng thành công");
-    request.getRequestDispatcher("/WEB-INF/views/admin/users/list.jsp")
-            .forward(request, response);
+
+    try {
+      userService.deleteUser(id);
+      session.setAttribute("message", "Xóa người dùng thành công");
+      response.sendRedirect(request.getContextPath() + "/admin/users");
+    } catch (Exception e) {
+      System.out.println(e.getMessage());
+      session.setAttribute("error", "Xóa người dùng thất bại");
+      response.sendRedirect(request.getContextPath() + "/admin/users");
+    }
   }
 
   private User getUserFromRequest(HttpServletRequest request) {
