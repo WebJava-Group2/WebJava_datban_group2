@@ -42,7 +42,11 @@ CREATE TABLE tables (
     id INT PRIMARY KEY AUTO_INCREMENT,
     name VARCHAR(100) NOT NULL,
     capacity INT NOT NULL,
-    status ENUM('available', 'occupied', 'reserved') NOT NULL,
+    -- available: trống
+    -- occupied: đang có khách
+    -- reserved: đã đặt trước
+    -- maintenance: đang bảo trì
+    status ENUM('available', 'occupied', 'reserved', 'maintenance') NOT NULL,
     location TEXT NOT NULL
 );
 
@@ -132,20 +136,20 @@ CREATE INDEX idx_foods_status ON foods(status);
 -- Chèn dữ liệu mẫu vào bảng users
 -- password: 12345678
 INSERT INTO users (name, email, phone, password, role, created_at) VALUES
-('Admin User', 'admin@gmail.com', '0901234567', '$2a$10$TFMxVkNGnp/ei5kx/N7OVed7d9G.cs5rLkdKjGoQ1qXfhC91BBGc6', 'admin', NOW()),
-('Staff User', 'staff@gmail.com', '0909876543', '$2a$10$TFMxVkNGnp/ei5kx/N7OVed7d9G.cs5rLkdKjGoQ1qXfhC91BBGc6', 'admin', NOW()),
-('Customer 1', 'customer1@gmail.com', '0912345678', '$2a$10$TFMxVkNGnp/ei5kx/N7OVed7d9G.cs5rLkdKjGoQ1qXfhC91BBGc6', 'customer', NOW()),
-('Customer 2', 'customer2@gmail.com', '0923456789', '$2a$10$TFMxVkNGnp/ei5kx/N7OVed7d9G.cs5rLkdKjGoQ1qXfhC91BBGc6', 'customer', NOW()),
-('Customer 3', 'customer3@gmail.com', '0934567890', '$2a$10$TFMxVkNGnp/ei5kx/N7OVed7d9G.cs5rLkdKjGoQ1qXfhC91BBGc6', 'customer', NOW());
+('Admin User', 'admin@gmail.com', '0901234567', '$2a$10$Hd2iSSXPv5GNck5IxLtQN.ykL74PRyFrAun9H/DPqU28qcrkj1B4y', 'admin', NOW()),
+('Staff User', 'staff@gmail.com', '0909876543', '$2a$10$Hd2iSSXPv5GNck5IxLtQN.ykL74PRyFrAun9H/DPqU28qcrkj1B4y', 'admin', NOW()),
+('Customer 1', 'customer1@gmail.com', '0912345678', '$2a$10$Hd2iSSXPv5GNck5IxLtQN.ykL74PRyFrAun9H/DPqU28qcrkj1B4y', 'customer', NOW()),
+('Customer 2', 'customer2@gmail.com', '0923456789', '$2a$10$Hd2iSSXPv5GNck5IxLtQN.ykL74PRyFrAun9H/DPqU28qcrkj1B4y', 'customer', NOW()),
+('Customer 3', 'customer3@gmail.com', '0934567890', '$2a$10$Hd2iSSXPv5GNck5IxLtQN.ykL74PRyFrAun9H/DPqU28qcrkj1B4y', 'customer', NOW());
 
 -- Chèn dữ liệu mẫu vào bảng tables
 INSERT INTO tables (name, capacity, status, location) VALUES
 ('Bàn A1', 2, 'available', 'Tầng 1 - Cửa sổ'),
-('Bàn A2', 2, 'available', 'Tầng 1 - Cửa sổ'),
+('Bàn A2', 2, 'occupied', 'Tầng 1 - Cửa sổ'),
 ('Bàn B1', 4, 'available', 'Tầng 1 - Giữa'),
-('Bàn B2', 4, 'available', 'Tầng 1 - Giữa'),
+('Bàn B2', 4, 'reserved', 'Tầng 1 - Giữa'),
 ('Bàn C1', 6, 'available', 'Tầng 2 - Cửa sổ'),
-('Bàn C2', 8, 'available', 'Tầng 2 - Ban công'),
+('Bàn C2', 8, 'reserved', 'Tầng 2 - Ban công'),
 ('Bàn VIP1', 10, 'available', 'Tầng 3 - Phòng riêng');
 
 -- Chèn dữ liệu mẫu vào bảng food
