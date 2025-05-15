@@ -13,6 +13,41 @@ pageEncoding="UTF-8" %>
         </a>
         <div class="sb-sidenav-menu-heading">Quản lý</div>
         <a
+            class="nav-link collapsed"
+            href="#"
+            data-bs-toggle="collapse"
+            data-bs-target="#adminUser"
+            aria-expanded="false"
+            aria-controls="adminUser"
+        >
+          <div class="sb-nav-link-icon">
+            <i class="fas fa-columns"></i>
+          </div>
+          Người dùng
+          <div class="sb-sidenav-collapse-arrow">
+            <i class="fas fa-angle-down"></i>
+          </div>
+        </a>
+        <div
+            class="collapse"
+            id="adminUser"
+            aria-labelledby="headingOne"
+            data-bs-parent="#sidenavAccordion"
+        >
+          <nav class="sb-sidenav-menu-nested nav">
+            <a
+                class="nav-link"
+                href="${pageContext.request.contextPath}/admin/users"
+            >Danh sách người dùng</a
+            >
+            <a
+                class="nav-link"
+                href="${pageContext.request.contextPath}/admin/users/add"
+            >Thêm người dùng</a
+            >
+          </nav>
+        </div>
+        <a
           class="nav-link collapsed"
           href="#"
           data-bs-toggle="collapse"

@@ -48,7 +48,23 @@ public class UserRepository extends BaseRepository<User, Integer> {
         statement.setString(3, entity.getPhone());
         statement.setString(4, entity.getPassword());
         statement.setString(5, entity.getRole());
+    }
+
+    protected void setInsertParameters(PreparedStatement statement, User entity) throws SQLException {
+        statement.setString(1, entity.getName());
+        statement.setString(2, entity.getEmail());
+        statement.setString(3, entity.getPhone());
+        statement.setString(4, entity.getPassword());
+        statement.setString(5, entity.getRole());
         statement.setTimestamp(6, entity.getCreatedAt());
+    }
+
+    @Override
+    public void insert(User entity) throws SQLException {
+        String query = getInsertQuery();
+        PreparedStatement statement = connection.prepareStatement(query);
+        setInsertParameters(statement, entity);
+        statement.executeUpdate();
     }
     
     @Override
@@ -81,5 +97,59 @@ public class UserRepository extends BaseRepository<User, Integer> {
             return resultSet.getInt(1);
         }
         return 0;
+    }
+
+    public List<User> getUsersByPageAndRole(int page, int itemsPerPage, String role) throws SQLException {
+        int offset = (page - 1) * itemsPerPage;
+        String query = getDisplayQuery() + " WHERE role = ? LIMIT ? OFFSET ?";
+        PreparedStatement statement = connection.prepareStatement(query);
+        statement.setString(1, role);
+        statement.setInt(2, itemsPerPage);
+        statement.setInt(3, offset);
+        ResultSet resultSet = statement.executeQuery();
+        
+        List<User> users = new ArrayList<>();
+        while (resultSet.next()) {
+            users.add(mapResultSetToEntity(resultSet));
+        }
+        return users;
+    }
+
+    public int getTotalUsersByRole(String role) throws SQLException {
+        String query = "SELECT COUNT(*) FROM " + getTableName() + " WHERE role = ?";
+        PreparedStatement statement = connection.prepareStatement(query);
+        statement.setString(1, role);
+        ResultSet resultSet = statement.executeQuery();
+        
+        if (resultSet.next()) {
+            return resultSet.getInt(1);
+        }
+        return 0;
+    }
+
+    public boolean checkEmailExist(String email, int id) throws SQLException {
+        String query = "SELECT COUNT(*) FROM " + getTableName() + " WHERE email = ? AND id != ?";
+        PreparedStatement statement = connection.prepareStatement(query);
+        statement.setString(1, email);
+        statement.setInt(2, id);
+        ResultSet resultSet = statement.executeQuery();
+
+        if (resultSet.next()) {
+            return resultSet.getInt(1) > 0;
+        }
+        return false;
+    }
+
+    public boolean checkPhoneExist(String phone, int id) throws SQLException {
+        String query = "SELECT COUNT(*) FROM " + getTableName() + " WHERE phone = ? AND id != ?";
+        PreparedStatement statement = connection.prepareStatement(query);
+        statement.setString(1, phone);
+        statement.setInt(2, id);
+        ResultSet resultSet = statement.executeQuery();
+
+        if (resultSet.next()) {
+            return resultSet.getInt(1) > 0;
+        }
+        return false;
     }
 }
