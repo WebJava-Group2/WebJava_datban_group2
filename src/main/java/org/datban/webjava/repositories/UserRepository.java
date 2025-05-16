@@ -100,12 +100,11 @@ public class UserRepository extends BaseRepository<User, Integer> {
     }
 
     public List<User> getUsersByPageAndRole(int page, int itemsPerPage, String role) throws SQLException {
-        int offset = (page - 1) * itemsPerPage;
         String query = getDisplayQuery() + " WHERE role = ? LIMIT ? OFFSET ?";
         PreparedStatement statement = connection.prepareStatement(query);
         statement.setString(1, role);
         statement.setInt(2, itemsPerPage);
-        statement.setInt(3, offset);
+        statement.setInt(3, getOffset(page, itemsPerPage));
         ResultSet resultSet = statement.executeQuery();
         
         List<User> users = new ArrayList<>();
@@ -151,5 +150,79 @@ public class UserRepository extends BaseRepository<User, Integer> {
             return resultSet.getInt(1) > 0;
         }
         return false;
+    }
+
+    public List<User> findByNameEmailPhone(String keyword, int page, int itemsPerPage) throws SQLException {
+        String query = getDisplayQuery() + 
+                      " WHERE name LIKE ? OR email LIKE ? OR phone LIKE ? " +
+                      "LIMIT ? OFFSET ?";
+        PreparedStatement statement = connection.prepareStatement(query);
+        String likePattern = "%" + keyword + "%";
+        statement.setString(1, likePattern);
+        statement.setString(2, likePattern);
+        statement.setString(3, likePattern);
+        statement.setInt(4, itemsPerPage);
+        statement.setInt(5, getOffset(page, itemsPerPage));
+        ResultSet resultSet = statement.executeQuery();
+        List<User> users = new ArrayList<>();
+        while (resultSet.next()) {
+            users.add(mapResultSetToEntity(resultSet));
+        }
+        return users;
+    }
+
+    public int getTotalUsersByKeyword(String keyword) throws SQLException {
+        String query = "SELECT COUNT(*) FROM " + getTableName() + 
+                      " WHERE name LIKE ? OR email LIKE ? OR phone LIKE ?";
+        PreparedStatement statement = connection.prepareStatement(query);
+        String likePattern = "%" + keyword + "%";
+        statement.setString(1, likePattern);
+        statement.setString(2, likePattern);
+        statement.setString(3, likePattern);
+        ResultSet resultSet = statement.executeQuery();
+        if (resultSet.next()) {
+            return resultSet.getInt(1);
+        }
+        return 0;
+    }
+
+    public List<User> findByNameEmailPhoneWithRole(String keyword, String role, int page, int itemsPerPage) throws SQLException {
+        String query = getDisplayQuery() + 
+                      " WHERE (name LIKE ? OR email LIKE ? OR phone LIKE ?) AND role = ? " +
+                      "LIMIT ? OFFSET ?";
+        PreparedStatement statement = connection.prepareStatement(query);
+        String likePattern = "%" + keyword + "%";
+        statement.setString(1, likePattern);
+        statement.setString(2, likePattern);
+        statement.setString(3, likePattern);
+        statement.setString(4, role);
+        statement.setInt(5, itemsPerPage);
+        statement.setInt(6, getOffset(page, itemsPerPage));
+        ResultSet resultSet = statement.executeQuery();
+        List<User> users = new ArrayList<>();
+        while (resultSet.next()) {
+            users.add(mapResultSetToEntity(resultSet));
+        }
+        return users;
+    }
+
+    public int getTotalUsersByNameEmailPhoneWithRole(String keyword, String role) throws SQLException {
+        String query = "SELECT COUNT(*) FROM " + getTableName() + 
+                      " WHERE (name LIKE ? OR email LIKE ? OR phone LIKE ?) AND role = ?";
+        PreparedStatement statement = connection.prepareStatement(query);
+        String likePattern = "%" + keyword + "%";
+        statement.setString(1, likePattern);
+        statement.setString(2, likePattern);
+        statement.setString(3, likePattern);
+        statement.setString(4, role);
+        ResultSet resultSet = statement.executeQuery();
+        if (resultSet.next()) {
+            return resultSet.getInt(1);
+        }
+        return 0;
+    }
+
+    private int getOffset(int page, int itemsPerPage) {
+        return (page - 1) * itemsPerPage;
     }
 }

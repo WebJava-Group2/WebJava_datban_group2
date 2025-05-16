@@ -78,19 +78,40 @@ public class UserController extends HttpServlet {
     int currentPage = getCurrentPage(request);
     int itemsPerPage = getItemsPerPage(request);
     String role = getRole(request);
-
+    String keyword = getKeyword(request);
     int totalItems;
     List<User> users;
 
-    if (role != null && !role.equals("all")) {
+    boolean hasKeyword = keyword != null && !keyword.isEmpty();
+    boolean hasRole = role != null && !role.equals("all");
+
+    // Lấy tổng số items trước
+    if (hasKeyword && hasRole) {
+      totalItems = userService.getTotalUsersByKeywordWithRole(keyword, role);
+    } else if (hasKeyword) {
+      totalItems = userService.getTotalUsersByKeyword(keyword);
+    } else if (hasRole) {
       totalItems = userService.getTotalUsersByRole(role);
-      users = userService.getUsersByRole(currentPage, itemsPerPage, role);
     } else {
       totalItems = userService.getTotalUsers();
-      users = userService.getUsers(currentPage, itemsPerPage);
     }
 
-    int totalPages = (int) Math.ceil((double) totalItems / itemsPerPage);
+    // Tính toán số trang và điều chỉnh trang hiện tại nếu cần
+    int totalPages = Math.max(1, (int) Math.ceil((double) totalItems / itemsPerPage));
+    if (currentPage > totalPages) {
+      currentPage = totalPages;
+    }
+
+    // Lấy danh sách users sau khi đã điều chỉnh trang
+    if (hasKeyword && hasRole) {
+      users = userService.findByKeywordWithRole(keyword, role, currentPage, itemsPerPage);
+    } else if (hasKeyword) {
+      users = userService.findByKeyword(keyword, currentPage, itemsPerPage);
+    } else if (hasRole) {
+      users = userService.getUsersByRole(currentPage, itemsPerPage, role);
+    } else {
+      users = userService.getUsers(currentPage, itemsPerPage);
+    }
 
     // Lấy message và error từ session
     HttpSession session = request.getSession();
@@ -105,6 +126,7 @@ public class UserController extends HttpServlet {
     setPaginationAttributes(request, currentPage, totalPages, totalItems, itemsPerPage);
     request.setAttribute("users", users);
     request.setAttribute("selectedRole", role);
+    request.setAttribute("keyword", keyword);
     request.setAttribute("message", message);
     request.setAttribute("error", error);
     setTitle(request, "Danh sách người dùng");
@@ -172,6 +194,14 @@ public class UserController extends HttpServlet {
     return role;
   }
 
+  private String getKeyword(HttpServletRequest request) {
+    String keyword = request.getParameter("keyword");
+    if (keyword == null || keyword.isEmpty()) {
+      return null;
+    }
+    return keyword;
+  }
+
   private void setPaginationAttributes(HttpServletRequest request, int currentPage, int totalPages, int totalItems, int itemsPerPage) {
     request.setAttribute("currentPage", currentPage);
     request.setAttribute("totalPages", totalPages);
@@ -235,27 +265,28 @@ public class UserController extends HttpServlet {
 
   private void handleDeleteUser(HttpServletRequest request, HttpServletResponse response)
           throws SQLException, ServletException, IOException {
-    String pathInfo = request.getPathInfo();
-    int id = Integer.parseInt(pathInfo.split("/")[1]);
-
-    // Lấy thông tin user đang đăng nhập từ session
-    HttpSession session = request.getSession();
-    User currentUser = (User) session.getAttribute("adminUser");
-
-    if (currentUser != null && currentUser.getId() == id) {
-      session.setAttribute("error", "Không thể xóa tài khoản đang đăng nhập");
-      response.sendRedirect(request.getContextPath() + "/admin/users");
-      return;
-    }
-
     try {
+      String pathInfo = request.getPathInfo();
+      int id = Integer.parseInt(pathInfo.split("/")[1]);
+
+      // Lấy thông tin user đang đăng nhập từ session
+      HttpSession session = request.getSession();
+      User currentUser = (User) session.getAttribute("adminUser");
+
+      if (currentUser != null && currentUser.getId() == id) {
+        session.setAttribute("error", "Không thể xóa tài khoản đang đăng nhập");
+        response.sendRedirect(request.getContextPath() + "/admin/users");
+        return;
+      }
+
       userService.deleteUser(id);
       session.setAttribute("message", "Xóa người dùng thành công");
       response.sendRedirect(request.getContextPath() + "/admin/users");
     } catch (Exception e) {
       System.out.println(e.getMessage());
-      session.setAttribute("error", "Xóa người dùng thất bại");
-      response.sendRedirect(request.getContextPath() + "/admin/users");
+      request.setAttribute("error", "Xóa người dùng thất bại");
+      request.getRequestDispatcher("/WEB-INF/views/admin/users/list.jsp")
+              .forward(request, response);
     }
   }
 
