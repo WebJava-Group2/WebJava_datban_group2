@@ -80,4 +80,99 @@ public class TableRepository extends BaseRepository<Table, Integer> {
     }
     return 0;
   }
+
+  public List<Table> getTablesByPageAndStatus(int page, int itemsPerPage, String status) throws SQLException {
+    int offset = (page - 1) * itemsPerPage;
+    String query = getDisplayQuery() + " WHERE status = ? LIMIT ? OFFSET ?";
+    PreparedStatement statement = connection.prepareStatement(query);
+    statement.setString(1, status);
+    statement.setInt(2, itemsPerPage);
+    statement.setInt(3, offset);
+    ResultSet resultSet = statement.executeQuery();
+    
+    List<Table> tables = new ArrayList<>();
+    while (resultSet.next()) {
+      tables.add(mapResultSetToEntity(resultSet));
+    }
+    return tables;
+  }
+
+  public int getTableCountByStatus(String status) throws SQLException {
+    String query = "SELECT COUNT(*) FROM " + getTableName() + " WHERE status = ?";
+    PreparedStatement statement = connection.prepareStatement(query);
+    statement.setString(1, status);
+    ResultSet resultSet = statement.executeQuery();
+    if (resultSet.next()) {
+      return resultSet.getInt(1);
+    }
+    return 0;
+  }
+
+  public List<Table> findByKeyword(String keyword, int page, int itemsPerPage) throws SQLException {
+    int offset = (page - 1) * itemsPerPage;
+    String query = getDisplayQuery() + 
+                  " WHERE name LIKE ? OR location LIKE ? " +
+                  "LIMIT ? OFFSET ?";
+    PreparedStatement statement = connection.prepareStatement(query);
+    String likePattern = "%" + keyword + "%";
+    statement.setString(1, likePattern);
+    statement.setString(2, likePattern);
+    statement.setInt(3, itemsPerPage);
+    statement.setInt(4, offset);
+    ResultSet resultSet = statement.executeQuery();
+    List<Table> tables = new ArrayList<>();
+    while (resultSet.next()) {
+      tables.add(mapResultSetToEntity(resultSet));
+    }
+    return tables;
+  }
+
+  public int getTotalTablesByKeyword(String keyword) throws SQLException {
+    String query = "SELECT COUNT(*) FROM " + getTableName() + 
+                  " WHERE name LIKE ? OR location LIKE ?";
+    PreparedStatement statement = connection.prepareStatement(query);
+    String likePattern = "%" + keyword + "%";
+    statement.setString(1, likePattern);
+    statement.setString(2, likePattern);
+    ResultSet resultSet = statement.executeQuery();
+    if (resultSet.next()) {
+      return resultSet.getInt(1);
+    }
+    return 0;
+  }
+
+  public List<Table> findByKeywordAndStatus(String keyword, String status, int page, int itemsPerPage) throws SQLException {
+    int offset = (page - 1) * itemsPerPage;
+    String query = getDisplayQuery() + 
+                  " WHERE (name LIKE ? OR location LIKE ?) AND status = ? " +
+                  "LIMIT ? OFFSET ?";
+    PreparedStatement statement = connection.prepareStatement(query);
+    String likePattern = "%" + keyword + "%";
+    statement.setString(1, likePattern);
+    statement.setString(2, likePattern);
+    statement.setString(3, status);
+    statement.setInt(4, itemsPerPage);
+    statement.setInt(5, offset);
+    ResultSet resultSet = statement.executeQuery();
+    List<Table> tables = new ArrayList<>();
+    while (resultSet.next()) {
+      tables.add(mapResultSetToEntity(resultSet));
+    }
+    return tables;
+  }
+
+  public int getTotalTablesByKeywordAndStatus(String keyword, String status) throws SQLException {
+    String query = "SELECT COUNT(*) FROM " + getTableName() + 
+                  " WHERE (name LIKE ? OR location LIKE ?) AND status = ?";
+    PreparedStatement statement = connection.prepareStatement(query);
+    String likePattern = "%" + keyword + "%";
+    statement.setString(1, likePattern);
+    statement.setString(2, likePattern);
+    statement.setString(3, status);
+    ResultSet resultSet = statement.executeQuery();
+    if (resultSet.next()) {
+      return resultSet.getInt(1);
+    }
+    return 0;
+  }
 }

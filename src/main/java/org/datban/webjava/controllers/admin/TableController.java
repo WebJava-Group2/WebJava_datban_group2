@@ -72,25 +72,47 @@ public class TableController extends HttpServlet {
     int currentPage = getCurrentPage(request);
     int itemsPerPage = getItemsPerPage(request);
     String status = getStatus(request);
+    String keyword = getKeyword(request);
 
     int totalItems;
     List<Table> tables;
 
-    if (status != null && !status.equals("all")) {
-      tables = tableService.getTablesByStatus(status);
-      totalItems = tables.size();
+    boolean hasKeyword = keyword != null && !keyword.isEmpty();
+    boolean hasStatus = status != null && !status.equals("all");
+
+    // Lấy tổng số items trước
+    if (hasKeyword && hasStatus) {
+      totalItems = tableService.getTotalTablesByKeywordAndStatus(keyword, status);
+    } else if (hasKeyword) {
+      totalItems = tableService.getTotalTablesByKeyword(keyword);
+    } else if (hasStatus) {
+      totalItems = tableService.getTableCountByStatus(status);
     } else {
-      tables = tableService.getTablesByPage(currentPage, itemsPerPage);
       totalItems = tableService.getTotalTables();
     }
 
-    int totalPages = (int) Math.ceil((double) totalItems / itemsPerPage);
+    // Tính toán số trang và điều chỉnh trang hiện tại nếu cần
+    int totalPages = Math.max(1, (int) Math.ceil((double) totalItems / itemsPerPage));
+    if (currentPage > totalPages) {
+      currentPage = totalPages;
+    }
+
+    // Lấy danh sách tables sau khi đã điều chỉnh trang
+    if (hasKeyword && hasStatus) {
+      tables = tableService.findByKeywordAndStatus(keyword, status, currentPage, itemsPerPage);
+    } else if (hasKeyword) {
+      tables = tableService.findByKeyword(keyword, currentPage, itemsPerPage);
+    } else if (hasStatus) {
+      tables = tableService.getTablesByPageAndStatus(currentPage, itemsPerPage, status);
+    } else {
+      tables = tableService.getTablesByPage(currentPage, itemsPerPage);
+    }
 
     // Lấy message và error từ session
     HttpSession session = request.getSession();
     String message = (String) session.getAttribute("message");
     String error = (String) session.getAttribute("error");
-
+    
     // Xóa message và error khỏi session sau khi đã lấy
     session.removeAttribute("message");
     session.removeAttribute("error");
@@ -98,6 +120,7 @@ public class TableController extends HttpServlet {
     setPaginationAttributes(request, currentPage, totalPages, totalItems, itemsPerPage);
     request.setAttribute("tables", tables);
     request.setAttribute("selectedStatus", status);
+    request.setAttribute("keyword", keyword);
     request.setAttribute("message", message);
     request.setAttribute("error", error);
     setTitle(request, "Danh sách bàn");
@@ -154,6 +177,14 @@ public class TableController extends HttpServlet {
       return Integer.parseInt(itemsPerPageParam);
     }
     return ITEMS_PER_PAGE;
+  }
+
+  private String getKeyword(HttpServletRequest request) {
+    String keyword = request.getParameter("keyword");
+    if (keyword == null || keyword.isEmpty()) {
+      return null;
+    }
+    return keyword;
   }
 
   private void setPaginationAttributes(HttpServletRequest request, int currentPage, int totalPages, int totalItems, int itemsPerPage) {

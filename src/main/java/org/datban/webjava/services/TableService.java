@@ -51,4 +51,28 @@ public class TableService {
   public List<Table> getTablesByStatus(String status) throws SQLException {
     return tableRepository.getTablesByStatus(status);
   }
+
+  public List<Table> getTablesByPageAndStatus(int page, int itemsPerPage, String status) throws SQLException {
+    return tableRepository.getTablesByPageAndStatus(page, itemsPerPage, status);
+  }
+
+  public int getTableCountByStatus(String status) throws SQLException {
+    return tableRepository.getTableCountByStatus(status);
+  }
+
+  public List<Table> findByKeyword(String keyword, int page, int itemsPerPage) throws SQLException {
+    return tableRepository.findByKeyword(keyword, page, itemsPerPage);
+  }
+
+  public int getTotalTablesByKeyword(String keyword) throws SQLException {
+    return tableRepository.getTotalTablesByKeyword(keyword);
+  }
+
+  public List<Table> findByKeywordAndStatus(String keyword, String status, int page, int itemsPerPage) throws SQLException {
+    return tableRepository.findByKeywordAndStatus(keyword, status, page, itemsPerPage);
+  }
+
+  public int getTotalTablesByKeywordAndStatus(String keyword, String status) throws SQLException {
+    return tableRepository.getTotalTablesByKeywordAndStatus(keyword, status);
+  }
 }

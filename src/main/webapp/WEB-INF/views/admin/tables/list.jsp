@@ -48,10 +48,42 @@
             <option value="50" ${itemsPerPage == 50 ? 'selected' : ''}>50</option>
           </select>
         </div>
+        <div class="d-flex align-items-center">
+          <label for="keyword" class="me-2">Tìm kiếm:</label>
+          <div class="input-group" style="width: 300px">
+            <div class="position-relative flex-grow-1">
+              <input
+                  type="text"
+                  class="form-control"
+                  id="keyword"
+                  placeholder="Tìm theo tên bàn, vị trí..."
+                  value="${keyword}"
+              >
+              <c:if test="${keyword != null && !empty keyword}">
+                <button
+                    type="button"
+                    class="btn-close position-absolute top-50 end-0 translate-middle-y me-2"
+                    style="display: block; padding: 0.5rem;"
+                    onclick="clearKeyword()"
+                    aria-label="Clear search"
+                ></button>
+              </c:if>
+            </div>
+            <button class="btn btn-outline-secondary" type="button" onclick="search()">
+              <i class="fas fa-search"></i>
+            </button>
+          </div>
+        </div>
       </div>
       <div class="text-muted">
-        Hiển thị ${(currentPage - 1) * itemsPerPage + 1}
-        - ${currentPage * itemsPerPage > totalItems ? totalItems : currentPage * itemsPerPage} của ${totalItems} bàn
+        <c:choose>
+          <c:when test="${totalItems == 0}">
+            Không có kết quả nào
+          </c:when>
+          <c:otherwise>
+            Hiển thị ${(currentPage - 1) * itemsPerPage + 1} - ${currentPage * itemsPerPage > totalItems ? totalItems : currentPage * itemsPerPage} của ${totalItems} bàn
+          </c:otherwise>
+        </c:choose>
       </div>
     </div>
     
@@ -59,6 +91,14 @@
       <div class="card-header">
         <i class="fas fa-table me-1"></i>
         Danh sách bàn
+        <c:if test="${keyword != null}">
+          <span class="ms-2 text-muted">
+            Kết quả tìm kiếm cho: "${keyword}"
+            <c:if test="${selectedStatus != null && selectedStatus != 'all'}">
+              - Trạng thái: ${selectedStatus == 'available' ? 'Trống' : selectedStatus == 'occupied' ? 'Đang có khách' : selectedStatus == 'reserved' ? 'Đã đặt trước' : 'Bảo trì'}
+            </c:if>
+          </span>
+        </c:if>
       </div>
       <div class="card-body">
         <table id="tableList" class="table table-striped table-bordered">
@@ -75,6 +115,11 @@
           </thead>
           
           <tbody>
+          <c:if test="${tables.size() == 0}">
+            <tr>
+              <td colspan="8" class="text-center align-middle text-danger">Không có bàn nào</td>
+            </tr>
+          </c:if>
           <c:forEach items="${tables}" var="table" varStatus="loop">
             <tr>
               <td class="text-center align-middle">${(currentPage - 1) * itemsPerPage + loop.index + 1}</td>
@@ -208,21 +253,42 @@
     document.getElementById("statusFilter").addEventListener("change", function () {
         const status = this.value;
         const currentUrl = new URL(window.location.href);
-        const itemsPerPage = document.getElementById("itemsPerPage").value;
 
-        currentUrl.searchParams.set("status", status);
+        if (status && status !== 'all') {
+            currentUrl.searchParams.set("status", status);
+        } else {
+            currentUrl.searchParams.delete("status");
+        }
         currentUrl.searchParams.set("page", "1"); // Reset về trang 1 khi thay đổi trạng thái
-        currentUrl.searchParams.set("itemsPerPage", itemsPerPage);
 
         window.location.href = currentUrl.toString();
     });
 
-    // Thiết lập giá trị ban đầu cho bộ lọc trạng thái
-    document.addEventListener("DOMContentLoaded", function () {
-        const urlParams = new URLSearchParams(window.location.search);
-        const status = urlParams.get("status");
-        if (status) {
-            document.getElementById("statusFilter").value = status;
+    function search() {
+        const keyword = document.getElementById('keyword').value.trim();
+        const currentUrl = new URL(window.location.href);
+
+        if (keyword) {
+            currentUrl.searchParams.set("keyword", keyword);
+        } else {
+            currentUrl.searchParams.delete("keyword");
+        }
+
+        currentUrl.searchParams.set("page", "1"); // Reset về trang 1 khi tìm kiếm
+        window.location.href = currentUrl.toString();
+    }
+
+    function clearKeyword() {
+        const currentUrl = new URL(window.location.href);
+        currentUrl.searchParams.delete("keyword");
+        currentUrl.searchParams.set("page", "1"); // Reset về trang 1 khi xóa từ khóa
+        window.location.href = currentUrl.toString();
+    }
+
+    // Thêm sự kiện Enter cho ô tìm kiếm
+    document.getElementById('keyword').addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') {
+            search();
         }
     });
 </script>
