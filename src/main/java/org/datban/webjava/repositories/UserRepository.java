@@ -171,4 +171,41 @@ public class UserRepository extends BaseRepository<User, Integer> {
             }
         }
     }
+
+    public User findByEmailOrPhone(String email, String phone) {
+        String sql = "SELECT * FROM users WHERE email = ? OR phone = ?";
+        try {
+            PreparedStatement statement = connection.prepareStatement(sql);
+            statement.setString(1, email);
+            statement.setString(2, phone);
+            ResultSet rs = statement.executeQuery();
+            if (rs.next()) {
+                User user = new User();
+                user.setId(rs.getInt("id"));
+                user.setName(rs.getString("name"));
+                user.setEmail(rs.getString("email"));
+                user.setPhone(rs.getString("phone"));
+                user.setPassword(rs.getString("password"));
+                user.setRole(rs.getString("role"));
+                user.setCreatedAt(rs.getTimestamp("created_at"));
+                return user;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public boolean updateUser(User user) {
+        String sql = "UPDATE users SET name = ? WHERE id = ?";
+        try {
+            PreparedStatement statement = connection.prepareStatement(sql);
+            statement.setString(1, user.getName());
+            statement.setInt(2, user.getId());
+            return statement.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 }

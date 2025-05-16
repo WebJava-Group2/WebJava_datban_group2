@@ -9,6 +9,7 @@ import org.datban.webjava.repositories.ReservationRepository;
 import org.datban.webjava.helpers.DatabaseConnector;
 import org.datban.webjava.models.User;
 import org.datban.webjava.repositories.UserRepository;
+import org.datban.webjava.helpers.HashedHelper;
 
 import java.sql.Date;
 import java.sql.Time;
@@ -18,14 +19,16 @@ import java.util.regex.Pattern;
 import java.sql.Timestamp;
 
 public class ReservationService {
-    private  ReservationRepository reservationRepository;
+    private ReservationRepository reservationRepository;
     private UserRepository userRepository;
+    private HashedHelper hashedHelper;
 
     public ReservationService() {
         try {
             Connection connection = DatabaseConnector.getConnection();
             this.reservationRepository = new ReservationRepository(connection);
             this.userRepository = new UserRepository(connection);
+            this.hashedHelper = new HashedHelper();
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -33,19 +36,15 @@ public class ReservationService {
 
     private Timestamp combineDateTime(String date, String time) {
         try {
-            // Kiểm tra null hoặc rỗng
             if (date == null || date.trim().isEmpty() || time == null || time.trim().isEmpty()) {
                 return null;
             }
 
-            // Kiểm tra định dạng ngày và giờ
             if (!date.matches("\\d{4}-\\d{2}-\\d{2}") || !time.matches("\\d{2}:\\d{2}")) {
                 return null;
             }
 
-            // Kết hợp ngày và giờ thành một chuỗi datetime
             String dateTimeStr = date + " " + time;
-            // Parse chuỗi thành timestamp
             return Timestamp.valueOf(dateTimeStr + ":00");
         } catch (IllegalArgumentException e) {
             e.printStackTrace();
@@ -56,7 +55,12 @@ public class ReservationService {
     public boolean createReservation(String name, String email, String phone, 
                                    String date, String time, int numberOfPeople, 
                                    String orderDetails) {
+        Connection connection = null;
         try {
+            connection = DatabaseConnector.getConnection();
+            // Bắt đầu transaction
+            connection.setAutoCommit(false);
+
             // Kiểm tra các trường bắt buộc
             if (name == null || name.trim().isEmpty() ||
                 email == null || email.trim().isEmpty() ||
@@ -68,23 +72,39 @@ public class ReservationService {
                 return false;
             }
 
-            // 1. Tạo user mới với role client
-            User user = new User();
-            user.setName(name.trim());
-            user.setEmail(email.trim());
-            user.setPhone(phone.trim());
-            user.setRole("client"); // Set role mặc định là client
-            user.setCreatedAt(new Timestamp(System.currentTimeMillis()));
+            // Tìm user hiện có hoặc tạo mới
+            int userId;
+            User existingUser = userRepository.findByEmailOrPhone(email.trim(), phone.trim());
             
-            int userId = userRepository.createUser(user);
-            if (userId == -1) {
-                return false;
+            if (existingUser != null) {
+                // Nếu user đã tồn tại, sử dụng user đó
+                userId = existingUser.getId();
+                // Cập nhật thông tin nếu cần
+                if (!existingUser.getName().equals(name.trim())) {
+                    existingUser.setName(name.trim());
+                    userRepository.updateUser(existingUser);
+                }
+            } else {
+                // Tạo user mới nếu chưa tồn tại
+                User newUser = new User();
+                newUser.setName(name.trim());
+                newUser.setEmail(email.trim());
+                newUser.setPhone(phone.trim());
+                newUser.setRole("customer");
+                newUser.setCreatedAt(new Timestamp(System.currentTimeMillis()));
+                String hashedPassword = hashedHelper.hashPassword(phone.trim());
+                newUser.setPassword(hashedPassword);
+                
+                userId = userRepository.createUser(newUser);
+                if (userId == -1) {
+                    throw new SQLException("Không thể tạo người dùng mới");
+                }
             }
 
-            // 2. Tính tổng tiền và tạo danh sách món ăn
+            // Tính tổng tiền và tạo danh sách món ăn
             List<OrderItem> orderItems = parseOrderDetails(orderDetails.trim());
             if (orderItems.isEmpty()) {
-                return false;
+                throw new SQLException("Danh sách món ăn không hợp lệ");
             }
 
             double total = 0.0;
@@ -96,10 +116,10 @@ public class ReservationService {
                 }
             }
 
-            // 3. Tạo reservation với timestamp đã gộp
+            // Tạo reservation với timestamp đã gộp
             Timestamp reservationDateTime = combineDateTime(date.trim(), time.trim());
             if (reservationDateTime == null) {
-                return false;
+                throw new SQLException("Thời gian đặt bàn không hợp lệ");
             }
 
             int reservationId = reservationRepository.createReservation(
@@ -111,10 +131,10 @@ public class ReservationService {
             );
 
             if (reservationId == -1) {
-                return false;
+                throw new SQLException("Không còn bàn trống trong thời gian này");
             }
 
-            // 4. Lưu chi tiết món ăn
+            // Lưu chi tiết món ăn
             for (OrderItem item : orderItems) {
                 int foodId = reservationRepository.getFoodIdByName(item.foodName);
                 if (foodId != -1) {
@@ -122,10 +142,29 @@ public class ReservationService {
                 }
             }
 
+            // Commit transaction nếu mọi thứ OK
+            connection.commit();
             return true;
         } catch (Exception e) {
+            // Rollback transaction nếu có lỗi
+            try {
+                if (connection != null) {
+                    connection.rollback();
+                }
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
             e.printStackTrace();
             return false;
+        } finally {
+            // Reset auto commit và đóng connection
+            try {
+                if (connection != null) {
+                    connection.setAutoCommit(true);
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
     }
 

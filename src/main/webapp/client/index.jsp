@@ -564,40 +564,40 @@
           <div class="col-lg-4 reservation-img" style="background-image: url(/webjava_war_exploded/client/assets/img/reservation.jpg);"></div>
 
           <div class="col-lg-8 d-flex align-items-center reservation-form-bg" data-aos="fade-up" data-aos-delay="200">
-            <form action="${pageContext.request.contextPath}/book-table" method="post" role="form" class="php-email-form">
+            <form id="reservationForm" action="${pageContext.request.contextPath}/book-table" method="post" role="form" class="reservation-form" enctype="application/x-www-form-urlencoded">
               <div class="row gy-4">
                 <div class="col-lg-4 col-md-6">
-                  <input type="text" name="name" class="form-control" id="name" placeholder="Tên của bạn" required="">
+                  <input type="text" name="name" class="form-control" id="name" placeholder="Tên của bạn" required>
                 </div>
                 <div class="col-lg-4 col-md-6">
-                  <input type="email" class="form-control" name="email" id="email" placeholder="Email của bạn" required="">
+                  <input type="email" class="form-control" name="email" id="email" placeholder="Email của bạn" required>
                 </div>
                 <div class="col-lg-4 col-md-6">
-                  <input type="text" class="form-control" name="phone" id="phone" placeholder="Số điện thoại" required="">
+                  <input type="text" class="form-control" name="phone" id="phone" placeholder="Số điện thoại" required>
                 </div>
                 <div class="col-lg-4 col-md-6">
-                  <input type="date" name="date" class="form-control" id="date" placeholder="Ngày đặt" required="">
+                  <input type="date" name="date" class="form-control" id="date" placeholder="Ngày đặt" required>
                 </div>
                 <div class="col-lg-4 col-md-6">
-                  <input type="time" class="form-control" name="time" id="time" placeholder="Thời giang" required="">
+                  <input type="time" class="form-control" name="time" id="time" placeholder="Thời giang" required>
                 </div>
                 <div class="col-lg-4 col-md-6">
-                  <input type="number" class="form-control" name="people" id="people" placeholder="# số người" required="">
+                  <input type="number" class="form-control" name="people" id="people" placeholder="# số người" required>
                 </div>
               </div>
 
               <div class="form-group mt-3">
-                <textarea class="form-control" name="message" rows="5" id="orderTextArea" placeholder="Vui lòng chọn món trên thực đơn!"></textarea>
+                <textarea class="form-control" name="message" rows="5" id="orderTextArea" placeholder="Vui lòng chọn món trên thực đơn!" required></textarea>
               </div>
 
               <div class="text-center mt-3">
-                <div class="loading">Loading</div>
+                <div class="loading d-none">Loading</div>
                 <div class="error-message"></div>
-                <div class="sent-message">Bạn đã đặt bàn thành công. Chúng tôi sẽ gửi email để xác minh. Xin cảm ơn!</div>
+                <div class="sent-message d-none">Bạn đã đặt bàn thành công. Chúng tôi sẽ gửi email để xác minh. Xin cảm ơn!</div>
                 <button type="submit">Đặt bàn</button>
               </div>
             </form>
-          </div><!-- End Reservation Form -->
+          </div>
 
         </div>
 
@@ -822,31 +822,77 @@
 
   </footer>
   <script>
-//Lưu trữ các món ăn và số lượng
-  var order = {};
-
-  function addDish(dishName) {
-      // Lấy phần tử textarea
-      var orderTextArea = document.getElementById('orderTextArea'); // Sử dụng ID thay vì class để tránh nhầm lẫn
-
-      alert("Đã chọn món: " + dishName); // In món ăn đã chọn ra console (nếu cần)
-
-      // Kiểm tra món ăn đã có trong danh sách chưa
+    // Dish selection functionality
+    var order = {};
+    
+    function addDish(dishName) {
+      // Get textarea element
+      var orderTextArea = document.getElementById('orderTextArea');
+      
+      // Check if dish already exists in order
       if (order[dishName]) {
-          order[dishName] += 1; // Nếu có rồi thì tăng số lượng
+        order[dishName] += 1;
       } else {
-          order[dishName] = 1; // Nếu chưa có, thêm món ăn mới vào
+        order[dishName] = 1;
       }
-
-      // Cập nhật lại ô yêu cầu với các món ăn và số lượng
+      
+      // Update textarea with current order
       var orderText = '';
       for (var dish in order) {
-          orderText += dish + ' - ' + order[dish] + ' x\n'; // Format: Món ăn - số lượng
+        orderText += dish + ' - ' + order[dish] + ' x\n';
       }
-      orderTextArea.value = orderText; // Cập nhật nội dung vào textarea
-  }
+      orderTextArea.value = orderText;
+    }
 
-    </script>
+    // Form submission handling
+    document.getElementById('reservationForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      // Show loading
+      this.querySelector('.loading').classList.remove('d-none');
+      this.querySelector('.error-message').textContent = '';
+      this.querySelector('.sent-message').classList.add('d-none');
+      
+      // Get form data
+      const formData = new FormData(this);
+      
+      // Convert FormData to URL-encoded string
+      const data = new URLSearchParams(formData);
+      
+      // Send request
+      fetch(this.action, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: data
+      })
+      .then(response => response.json())
+      .then(data => {
+        // Hide loading
+        this.querySelector('.loading').classList.add('d-none');
+        
+        if (data.status === 'success') {
+          // Hiển thị alert thành công
+          alert('Đặt bàn thành công! Chúng tôi sẽ liên hệ với bạn sớm nhất.');
+          this.querySelector('.sent-message').classList.remove('d-none');
+          this.reset();
+          // Reset order object
+          order = {};
+        } else {
+          // Hiển thị alert lỗi
+          alert(data.message || 'Có lỗi xảy ra khi đặt bàn. Vui lòng thử lại!');
+          this.querySelector('.error-message').textContent = data.message;
+        }
+      })
+      .catch(error => {
+        // Hide loading
+        this.querySelector('.loading').classList.add('d-none');
+        alert('Có lỗi xảy ra. Vui lòng thử lại sau.');
+        this.querySelector('.error-message').textContent = 'Có lỗi xảy ra. Vui lòng thử lại sau.';
+      });
+    });
+  </script>
 
   <!-- Scroll Top -->
   <a href="#" id="scroll-top" class="scroll-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>

@@ -14,8 +14,10 @@ public class ReservationRepository extends BaseRepository<Reservation, Integer> 
 
     @Override
     protected String getDisplayQuery() {
-        return "SELECT id, total_people, status, reservation_at, note, total_price, created_at, customer_id " +
-               "FROM reservations";
+        return "SELECT r.id, r.total_people, r.status, r.reservation_at, r.note, r.total_price, " +
+               "r.created_at, r.customer_id, r.table_id, t.name as table_name, t.status as table_status " +
+               "FROM reservations r " +
+               "LEFT JOIN tables t ON r.table_id = t.id";
     }
 
     @Override
@@ -29,6 +31,7 @@ public class ReservationRepository extends BaseRepository<Reservation, Integer> 
         reservation.setTotalPrice(resultSet.getFloat("total_price"));
         reservation.setCreatedAt(resultSet.getTimestamp("created_at"));
         reservation.setCustomerId(resultSet.getInt("customer_id"));
+        reservation.setTableId(resultSet.getInt("table_id"));
         return reservation;
     }
 
@@ -55,7 +58,7 @@ public class ReservationRepository extends BaseRepository<Reservation, Integer> 
 
     @Override
     protected String getTableName() {
-        return "reservation";
+        return "reservations";
     }
 
     public List<Reservation> getReservationsByUserId(int userId) throws SQLException {
@@ -99,33 +102,108 @@ public class ReservationRepository extends BaseRepository<Reservation, Integer> 
         return 0;
     }
 
+    public int getAvailableTable(Timestamp reservationDateTime, int numberOfPeople) {
+        // Tìm bàn trống phù hợp với số người
+        String sql = "SELECT t.id FROM tables t " +
+                    "WHERE t.status = 'available' " +
+                    "AND t.capacity >= ? " +
+                    "AND NOT EXISTS (" +
+                    "    SELECT 1 FROM reservations r " +
+                    "    WHERE r.table_id = t.id " +
+                    "    AND r.status != 'cancelled' " +
+                    "    AND r.reservation_at BETWEEN ? - INTERVAL '2' HOUR AND ? + INTERVAL '2' HOUR" +
+                    ") " +
+                    "ORDER BY t.capacity ASC " +
+                    "LIMIT 1";
+        try {
+            PreparedStatement statement = connection.prepareStatement(sql);
+            statement.setInt(1, numberOfPeople);
+            statement.setTimestamp(2, reservationDateTime);
+            statement.setTimestamp(3, reservationDateTime);
+            ResultSet rs = statement.executeQuery();
+            
+            if (rs.next()) {
+                return rs.getInt("id");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return -1; // Không còn bàn trống phù hợp
+    }
+
+    public boolean updateTableStatus(int tableId, String status) {
+        String sql = "UPDATE tables SET status = ? WHERE id = ?";
+        try {
+            PreparedStatement statement = connection.prepareStatement(sql);
+            statement.setString(1, status);
+            statement.setInt(2, tableId);
+            return statement.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
     public int createReservation(int userId, Timestamp reservationDateTime,
                                int numberOfPeople, String note, double total) {
-        String sql = "INSERT INTO reservation (user_id, reservation_at, " +
-                    "number_of_people, note, total, status) VALUES (?, ?, ?, ?, ?, 'pending')";
+        // Tìm bàn trống phù hợp
+        int tableId = getAvailableTable(reservationDateTime, numberOfPeople);
+        if (tableId == -1) {
+            return -1; // Không còn bàn trống phù hợp
+        }
+
+        String sql = "INSERT INTO reservations (customer_id, reservation_at, " +
+                    "total_people, note, total_price, status, created_at, table_id) " +
+                    "VALUES (?, ?, ?, ?, ?, 'pending', NOW(), ?)";
         try {
+            // Bắt đầu transaction
+            connection.setAutoCommit(false);
+
+            // Tạo reservation
             PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
             statement.setInt(1, userId);
             statement.setTimestamp(2, reservationDateTime);
             statement.setInt(3, numberOfPeople);
             statement.setString(4, note);
             statement.setDouble(5, total);
+            statement.setInt(6, tableId);
 
             int affectedRows = statement.executeUpdate();
             if (affectedRows == 0) {
-                throw new SQLException("Creating reservation failed, no rows affected.");
+                connection.rollback();
+                return -1;
             }
 
-            try (ResultSet generatedKeys = statement.getGeneratedKeys()) {
-                if (generatedKeys.next()) {
-                    return generatedKeys.getInt(1);
-                } else {
-                    throw new SQLException("Creating reservation failed, no ID obtained.");
-                }
+            // Cập nhật trạng thái bàn thành 'reserved'
+            if (!updateTableStatus(tableId, "reserved")) {
+                connection.rollback();
+                return -1;
             }
+
+            // Lấy ID của reservation vừa tạo
+            ResultSet generatedKeys = statement.getGeneratedKeys();
+            int reservationId = -1;
+            if (generatedKeys.next()) {
+                reservationId = generatedKeys.getInt(1);
+            }
+
+            // Commit transaction
+            connection.commit();
+            return reservationId;
         } catch (SQLException e) {
+            try {
+                connection.rollback();
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
             e.printStackTrace();
             return -1;
+        } finally {
+            try {
+                connection.setAutoCommit(true);
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -143,7 +221,7 @@ public class ReservationRepository extends BaseRepository<Reservation, Integer> 
     }
 
     public double getFoodPrice(int foodId) {
-        String sql = "SELECT price FROM food WHERE id = ?";
+        String sql = "SELECT price FROM foods WHERE id = ?";
         try {
             PreparedStatement statement = connection.prepareStatement(sql);
             statement.setInt(1, foodId);
@@ -158,7 +236,7 @@ public class ReservationRepository extends BaseRepository<Reservation, Integer> 
     }
 
     public int getFoodIdByName(String foodName) {
-        String sql = "SELECT id FROM food WHERE name = ?";
+        String sql = "SELECT id FROM foods WHERE name = ?";
         try {
             PreparedStatement statement = connection.prepareStatement(sql);
             statement.setString(1, foodName);

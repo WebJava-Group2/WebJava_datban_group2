@@ -12,6 +12,7 @@ public class Reservation implements IBaseModel<Integer> {
     private Float totalPrice;
     private Timestamp createdAt;
     private Integer customerId;
+    private Integer tableId;
 
     // Constructor mặc định
     public Reservation() {
@@ -19,7 +20,7 @@ public class Reservation implements IBaseModel<Integer> {
 
     // Constructor đầy đủ
     public Reservation(Integer id, Integer totalPeople, String status, Timestamp reservationAt, 
-                      String note, Float totalPrice, Timestamp createdAt, Integer customerId) {
+                      String note, Float totalPrice, Timestamp createdAt, Integer customerId, Integer tableId) {
         this.id = id;
         this.totalPeople = totalPeople;
         this.status = status;
@@ -28,6 +29,7 @@ public class Reservation implements IBaseModel<Integer> {
         this.totalPrice = totalPrice;
         this.createdAt = createdAt;
         this.customerId = customerId;
+        this.tableId = tableId;
     }
 
     // Getters và Setters
@@ -93,5 +95,13 @@ public class Reservation implements IBaseModel<Integer> {
 
     public void setCustomerId(Integer customerId) {
         this.customerId = customerId;
+    }
+
+    public Integer getTableId() {
+        return tableId;
+    }
+
+    public void setTableId(Integer tableId) {
+        this.tableId = tableId;
     }
 }
