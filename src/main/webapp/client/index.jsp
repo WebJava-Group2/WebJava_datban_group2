@@ -723,35 +723,35 @@
 
         </div>
 
-        <form action="${pageContext.request.contextPath}/contact" method="post" class="php-email-form" data-aos="fade-up" data-aos-delay="600">
+        <form id="reviewForm" action="${pageContext.request.contextPath}/contact" method="post" class="contact-form" data-aos="fade-up" data-aos-delay="600">
           <div class="row gy-4">
 
             <div class="col-md-6">
-              <input type="text" name="name" class="form-control" placeholder="Your Name" required="">
+              <input type="text" name="name" class="form-control" placeholder="Tên của bạn" required>
             </div>
 
-            <div class="col-md-6 ">
-              <input type="email" class="form-control" name="email" placeholder="Your Email" required="">
-            </div>
-
-            <div class="col-md-12">
-              <input type="text" class="form-control" name="subject" placeholder="Subject" required="">
+            <div class="col-md-6">
+              <input type="email" class="form-control" name="email" placeholder="Email của bạn" required>
             </div>
 
             <div class="col-md-12">
-              <textarea class="form-control" name="message" rows="6" placeholder="Message" required=""></textarea>
+              <input type="text" class="form-control" name="phone" placeholder="Số điện thoại" required>
+            </div>
+
+            <div class="col-md-12">
+              <textarea class="form-control" name="content" rows="6" placeholder="Nội dung đánh giá" required></textarea>
             </div>
 
             <div class="col-md-12 text-center">
-              <div class="loading">Loading</div>
+              <div class="loading d-none">Loading</div>
               <div class="error-message"></div>
-              <div class="sent-message">Đánh giá của bạn đã được gửi đi. Cảm ơn!</div>
+              <div class="sent-message d-none">Đánh giá của bạn đã được gửi đi. Cảm ơn!</div>
 
               <button type="submit">Gửi đánh giá</button>
             </div>
 
           </div>
-        </form><!-- End Contact Form -->
+        </form>
 
       </div>
 
@@ -889,6 +889,48 @@
         // Hide loading
         this.querySelector('.loading').classList.add('d-none');
         alert('Có lỗi xảy ra. Vui lòng thử lại sau.');
+        this.querySelector('.error-message').textContent = 'Có lỗi xảy ra. Vui lòng thử lại sau.';
+      });
+    });
+
+    // Form submission handling for review
+    document.getElementById('reviewForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      // Show loading
+      this.querySelector('.loading').classList.remove('d-none');
+      this.querySelector('.error-message').textContent = '';
+      this.querySelector('.sent-message').classList.add('d-none');
+      
+      // Get form data
+      const formData = new FormData(this);
+      
+      // Convert FormData to URL-encoded string
+      const data = new URLSearchParams(formData);
+      
+      // Send request
+      fetch(this.action, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: data
+      })
+      .then(response => response.json())
+      .then(data => {
+        // Hide loading
+        this.querySelector('.loading').classList.add('d-none');
+        
+        if (data.status === 'success') {
+          this.querySelector('.sent-message').classList.remove('d-none');
+          this.reset();
+        } else {
+          this.querySelector('.error-message').textContent = data.message || 'Có lỗi xảy ra khi gửi đánh giá. Vui lòng thử lại!';
+        }
+      })
+      .catch(error => {
+        // Hide loading
+        this.querySelector('.loading').classList.add('d-none');
         this.querySelector('.error-message').textContent = 'Có lỗi xảy ra. Vui lòng thử lại sau.';
       });
     });

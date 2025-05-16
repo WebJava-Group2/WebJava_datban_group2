@@ -14,8 +14,10 @@ public class ReviewRepository extends BaseRepository<Reviews, Integer> {
 
     @Override
     protected String getDisplayQuery() {
-        return "SELECT r.id, r.customer_id, r.rating, r.content, r.created_at " +
-               "FROM reviews r";
+        return "SELECT r.id, r.customer_id, r.rating, r.content, r.created_at, " +
+               "u.name as customer_name, u.email as customer_email " +
+               "FROM reviews r " +
+               "LEFT JOIN users u ON r.customer_id = u.id";
     }
 
     @Override
@@ -44,7 +46,6 @@ public class ReviewRepository extends BaseRepository<Reviews, Integer> {
         statement.setInt(1, entity.getCustomerId());
         statement.setInt(2, entity.getRating());
         statement.setString(3, entity.getContent());
-        statement.setTimestamp(4, entity.getCreatedAt());
     }
 
     @Override
@@ -52,23 +53,37 @@ public class ReviewRepository extends BaseRepository<Reviews, Integer> {
         return "reviews";
     }
 
+    public int createReview(Reviews review) {
+        String sql = "INSERT INTO reviews (customer_id, rating, content, created_at) VALUES (?, ?, ?, ?)";
+        try {
+            PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+            statement.setInt(1, review.getCustomerId());
+            statement.setInt(2, review.getRating());
+            statement.setString(3, review.getContent());
+            statement.setTimestamp(4, review.getCreatedAt());
+
+            int affectedRows = statement.executeUpdate();
+            if (affectedRows == 0) {
+                throw new SQLException("Creating review failed, no rows affected.");
+            }
+
+            try (ResultSet generatedKeys = statement.getGeneratedKeys()) {
+                if (generatedKeys.next()) {
+                    return generatedKeys.getInt(1);
+                } else {
+                    throw new SQLException("Creating review failed, no ID obtained.");
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return -1;
+        }
+    }
+
     public List<Reviews> getReviewsByCustomerId(int customerId) throws SQLException {
         String query = getDisplayQuery() + " WHERE r.customer_id = ?";
         PreparedStatement statement = connection.prepareStatement(query);
         statement.setInt(1, customerId);
-        ResultSet resultSet = statement.executeQuery();
-        
-        List<Reviews> reviews = new ArrayList<>();
-        while (resultSet.next()) {
-            reviews.add(mapResultSetToEntity(resultSet));
-        }
-        return reviews;
-    }
-
-    public List<Reviews> getReviewsByRating(int rating) throws SQLException {
-        String query = getDisplayQuery() + " WHERE r.rating = ?";
-        PreparedStatement statement = connection.prepareStatement(query);
-        statement.setInt(1, rating);
         ResultSet resultSet = statement.executeQuery();
         
         List<Reviews> reviews = new ArrayList<>();
@@ -91,5 +106,18 @@ public class ReviewRepository extends BaseRepository<Reviews, Integer> {
             return resultSet.getInt(1);
         }
         return 0;
+    }
+
+    public List<Reviews> getLatestReviews(int limit) throws SQLException {
+        String query = getDisplayQuery() + " ORDER BY r.created_at DESC LIMIT ?";
+        PreparedStatement statement = connection.prepareStatement(query);
+        statement.setInt(1, limit);
+        ResultSet resultSet = statement.executeQuery();
+        
+        List<Reviews> reviews = new ArrayList<>();
+        while (resultSet.next()) {
+            reviews.add(mapResultSetToEntity(resultSet));
+        }
+        return reviews;
     }
 }

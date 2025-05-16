@@ -37,6 +37,11 @@ CREATE TABLE reservations (
     FOREIGN KEY (customer_id) REFERENCES users(id)
 );
 
+ALTER TABLE reservations 
+ADD COLUMN table_id INT,
+ADD CONSTRAINT fk_reservation_table 
+FOREIGN KEY (table_id) REFERENCES tables(id);
+
 -- Tạo bảng tables
 CREATE TABLE tables (
     id INT PRIMARY KEY AUTO_INCREMENT,
@@ -210,6 +215,10 @@ INSERT INTO reservation_food (reservation_id, food_id, quantity) VALUES
 -- Chèn dữ liệu mẫu vào bảng reservation_combo
 INSERT INTO reservation_combo (reservation_id, combo_id, quantity) VALUES
 (3, 3, 1); -- 1 Combo tiệc nhỏ cho reservation 3
+select* from users;
+select*from reservations;
+select*from reservation_food;
+ALTER TABLE reservations ;
 
 -- Chèn dữ liệu mẫu vào bảng reviews
 INSERT INTO reviews (customer_id, rating, content, created_at) VALUES
