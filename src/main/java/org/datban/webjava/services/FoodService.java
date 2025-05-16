@@ -93,4 +93,36 @@ public class FoodService {
   public int getFoodCountByMealType(String mealType) throws SQLException {
     return foodRepository.getFoodCountByMealType(mealType);
   }
+
+  public List<Food> findByKeyword(String keyword, int page, int itemsPerPage) throws SQLException {
+    return foodRepository.findByKeyword(keyword, page, itemsPerPage);
+  }
+
+  public int getTotalFoodsByKeyword(String keyword) throws SQLException {
+    return foodRepository.getTotalFoodsByKeyword(keyword);
+  }
+
+  public List<Food> findByKeywordAndStatus(String keyword, String status, int page, int itemsPerPage) throws SQLException {
+    return foodRepository.findByKeywordAndStatus(keyword, status, page, itemsPerPage);
+  }
+
+  public int getTotalFoodsByKeywordAndStatus(String keyword, String status) throws SQLException {
+    return foodRepository.getTotalFoodsByKeywordAndStatus(keyword, status);
+  }
+
+  public List<Food> findByKeywordAndMealType(String keyword, String mealType, int page, int itemsPerPage) throws SQLException {
+    return foodRepository.findByKeywordAndMealType(keyword, mealType, page, itemsPerPage);
+  }
+
+  public int getTotalFoodsByKeywordAndMealType(String keyword, String mealType) throws SQLException {
+    return foodRepository.getTotalFoodsByKeywordAndMealType(keyword, mealType);
+  }
+
+  public List<Food> findByKeywordAndStatusAndMealType(String keyword, String status, String mealType, int page, int itemsPerPage) throws SQLException {
+    return foodRepository.findByKeywordAndStatusAndMealType(keyword, status, mealType, page, itemsPerPage);
+  }
+
+  public int getTotalFoodsByKeywordAndStatusAndMealType(String keyword, String status, String mealType) throws SQLException {
+    return foodRepository.getTotalFoodsByKeywordAndStatusAndMealType(keyword, status, mealType);
+  }
 }

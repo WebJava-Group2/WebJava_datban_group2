@@ -72,25 +72,58 @@ public class FoodController extends HttpServlet {
     int itemsPerPage = getItemsPerPage(request);
     String status = getStatus(request);
     String mealType = getMealType(request);
+    String keyword = getKeyword(request);
 
     int totalItems;
     List<Food> foods;
 
-    if (status != null && mealType != null && !"all".equals(status) && !"all".equals(mealType)) {
-      foods = foodService.getFoodsByStatusAndMealType(currentPage, itemsPerPage, status, mealType);
+    boolean hasKeyword = keyword != null && !keyword.isEmpty();
+    boolean hasStatus = status != null && !status.equals("all");
+    boolean hasMealType = mealType != null && !mealType.equals("all");
+
+    // Lấy tổng số items trước
+    if (hasKeyword && hasStatus && hasMealType) {
+      totalItems = foodService.getTotalFoodsByKeywordAndStatusAndMealType(keyword, status, mealType);
+    } else if (hasKeyword && hasStatus) {
+      totalItems = foodService.getTotalFoodsByKeywordAndStatus(keyword, status);
+    } else if (hasKeyword && hasMealType) {
+      totalItems = foodService.getTotalFoodsByKeywordAndMealType(keyword, mealType);
+    } else if (hasStatus && hasMealType) {
       totalItems = foodService.getFoodCountByStatusAndMealType(status, mealType);
-    } else if (status != null && !"all".equals(status)) {
-      foods = foodService.getFoodsByStatus(currentPage, itemsPerPage, status);
+    } else if (hasKeyword) {
+      totalItems = foodService.getTotalFoodsByKeyword(keyword);
+    } else if (hasStatus) {
       totalItems = foodService.getFoodCountByStatus(status);
-    } else if (mealType != null && !"all".equals(mealType)) {
-      foods = foodService.getFoodsByMealType(currentPage, itemsPerPage, mealType);
+    } else if (hasMealType) {
       totalItems = foodService.getFoodCountByMealType(mealType);
     } else {
-      foods = foodService.getFoods(currentPage, itemsPerPage);
       totalItems = foodService.getTotalFoods();
     }
 
-    int totalPages = (int) Math.ceil((double) totalItems / itemsPerPage);
+    // Tính toán số trang và điều chỉnh trang hiện tại nếu cần
+    int totalPages = Math.max(1, (int) Math.ceil((double) totalItems / itemsPerPage));
+    if (currentPage > totalPages) {
+      currentPage = totalPages;
+    }
+
+    // Lấy danh sách foods sau khi đã điều chỉnh trang
+    if (hasKeyword && hasStatus && hasMealType) {
+      foods = foodService.findByKeywordAndStatusAndMealType(keyword, status, mealType, currentPage, itemsPerPage);
+    } else if (hasKeyword && hasStatus) {
+      foods = foodService.findByKeywordAndStatus(keyword, status, currentPage, itemsPerPage);
+    } else if (hasKeyword && hasMealType) {
+      foods = foodService.findByKeywordAndMealType(keyword, mealType, currentPage, itemsPerPage);
+    } else if (hasStatus && hasMealType) {
+      foods = foodService.getFoodsByStatusAndMealType(currentPage, itemsPerPage, status, mealType);
+    } else if (hasKeyword) {
+      foods = foodService.findByKeyword(keyword, currentPage, itemsPerPage);
+    } else if (hasStatus) {
+      foods = foodService.getFoodsByStatus(currentPage, itemsPerPage, status);
+    } else if (hasMealType) {
+      foods = foodService.getFoodsByMealType(currentPage, itemsPerPage, mealType);
+    } else {
+      foods = foodService.getFoods(currentPage, itemsPerPage);
+    }
 
     // Lấy message và error từ session
     HttpSession session = request.getSession();
@@ -105,6 +138,7 @@ public class FoodController extends HttpServlet {
     request.setAttribute("foods", foods);
     request.setAttribute("selectedMealType", mealType);
     request.setAttribute("selectedStatus", status);
+    request.setAttribute("keyword", keyword);
     request.setAttribute("message", message);
     request.setAttribute("error", error);
     setTitle(request, "Danh sách món ăn");
@@ -161,6 +195,14 @@ public class FoodController extends HttpServlet {
       return null;
     }
     return mealType;
+  }
+
+  private String getKeyword(HttpServletRequest request) {
+    String keyword = request.getParameter("keyword");
+    if (keyword == null || keyword.isEmpty()) {
+      return null;
+    }
+    return keyword;
   }
 
   private int getItemsPerPage(HttpServletRequest request) {

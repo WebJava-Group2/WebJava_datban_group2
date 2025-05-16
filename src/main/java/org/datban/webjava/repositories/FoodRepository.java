@@ -159,4 +159,136 @@ public class FoodRepository extends BaseRepository<Food, Integer> {
         }
         return 0;
     }
+
+    public List<Food> findByKeyword(String keyword, int page, int itemsPerPage) throws SQLException {
+        int offset = (page - 1) * itemsPerPage;
+        String query = getDisplayQuery() + 
+                      " WHERE name LIKE ? " +
+                      "LIMIT ? OFFSET ?";
+        PreparedStatement statement = connection.prepareStatement(query);
+        String likePattern = "%" + keyword + "%";
+        statement.setString(1, likePattern);
+        statement.setInt(2, itemsPerPage);
+        statement.setInt(3, offset);
+        ResultSet resultSet = statement.executeQuery();
+        List<Food> foods = new ArrayList<>();
+        while (resultSet.next()) {
+            foods.add(mapResultSetToEntity(resultSet));
+        }
+        return foods;
+    }
+
+    public int getTotalFoodsByKeyword(String keyword) throws SQLException {
+        String query = "SELECT COUNT(*) FROM " + getTableName() + 
+                      " WHERE name LIKE ?";
+        PreparedStatement statement = connection.prepareStatement(query);
+        String likePattern = "%" + keyword + "%";
+        statement.setString(1, likePattern);
+        ResultSet resultSet = statement.executeQuery();
+        if (resultSet.next()) {
+            return resultSet.getInt(1);
+        }
+        return 0;
+    }
+
+    public List<Food> findByKeywordAndStatus(String keyword, String status, int page, int itemsPerPage) throws SQLException {
+        int offset = (page - 1) * itemsPerPage;
+        String query = getDisplayQuery() + 
+                      " WHERE name LIKE ? AND status = ? " +
+                      "LIMIT ? OFFSET ?";
+        PreparedStatement statement = connection.prepareStatement(query);
+        String likePattern = "%" + keyword + "%";
+        statement.setString(1, likePattern);
+        statement.setString(2, status);
+        statement.setInt(3, itemsPerPage);
+        statement.setInt(4, offset);
+        ResultSet resultSet = statement.executeQuery();
+        List<Food> foods = new ArrayList<>();
+        while (resultSet.next()) {
+            foods.add(mapResultSetToEntity(resultSet));
+        }
+        return foods;
+    }
+
+    public int getTotalFoodsByKeywordAndStatus(String keyword, String status) throws SQLException {
+        String query = "SELECT COUNT(*) FROM " + getTableName() + 
+                      " WHERE name LIKE ? AND status = ?";
+        PreparedStatement statement = connection.prepareStatement(query);
+        String likePattern = "%" + keyword + "%";
+        statement.setString(1, likePattern);
+        statement.setString(2, status);
+        ResultSet resultSet = statement.executeQuery();
+        if (resultSet.next()) {
+            return resultSet.getInt(1);
+        }
+        return 0;
+    }
+
+    public List<Food> findByKeywordAndMealType(String keyword, String mealType, int page, int itemsPerPage) throws SQLException {
+        int offset = (page - 1) * itemsPerPage;
+        String query = getDisplayQuery() + 
+                      " WHERE name LIKE ? AND meal_type = ? " +
+                      "LIMIT ? OFFSET ?";
+        PreparedStatement statement = connection.prepareStatement(query);
+        String likePattern = "%" + keyword + "%";
+        statement.setString(1, likePattern);
+        statement.setString(2, mealType);
+        statement.setInt(3, itemsPerPage);
+        statement.setInt(4, offset);
+        ResultSet resultSet = statement.executeQuery();
+        List<Food> foods = new ArrayList<>();
+        while (resultSet.next()) {
+            foods.add(mapResultSetToEntity(resultSet));
+        }
+        return foods;
+    }
+
+    public int getTotalFoodsByKeywordAndMealType(String keyword, String mealType) throws SQLException {
+        String query = "SELECT COUNT(*) FROM " + getTableName() + 
+                      " WHERE name LIKE ? AND meal_type = ?";
+        PreparedStatement statement = connection.prepareStatement(query);
+        String likePattern = "%" + keyword + "%";
+        statement.setString(1, likePattern);
+        statement.setString(2, mealType);
+        ResultSet resultSet = statement.executeQuery();
+        if (resultSet.next()) {
+            return resultSet.getInt(1);
+        }
+        return 0;
+    }
+
+    public List<Food> findByKeywordAndStatusAndMealType(String keyword, String status, String mealType, int page, int itemsPerPage) throws SQLException {
+        int offset = (page - 1) * itemsPerPage;
+        String query = getDisplayQuery() + 
+                      " WHERE name LIKE ? AND status = ? AND meal_type = ? " +
+                      "LIMIT ? OFFSET ?";
+        PreparedStatement statement = connection.prepareStatement(query);
+        String likePattern = "%" + keyword + "%";
+        statement.setString(1, likePattern);
+        statement.setString(2, status);
+        statement.setString(3, mealType);
+        statement.setInt(4, itemsPerPage);
+        statement.setInt(5, offset);
+        ResultSet resultSet = statement.executeQuery();
+        List<Food> foods = new ArrayList<>();
+        while (resultSet.next()) {
+            foods.add(mapResultSetToEntity(resultSet));
+        }
+        return foods;
+    }
+
+    public int getTotalFoodsByKeywordAndStatusAndMealType(String keyword, String status, String mealType) throws SQLException {
+        String query = "SELECT COUNT(*) FROM " + getTableName() + 
+                      " WHERE name LIKE ? AND status = ? AND meal_type = ?";
+        PreparedStatement statement = connection.prepareStatement(query);
+        String likePattern = "%" + keyword + "%";
+        statement.setString(1, likePattern);
+        statement.setString(2, status);
+        statement.setString(3, mealType);
+        ResultSet resultSet = statement.executeQuery();
+        if (resultSet.next()) {
+            return resultSet.getInt(1);
+        }
+        return 0;
+    }
 }
