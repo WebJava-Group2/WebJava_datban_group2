@@ -56,4 +56,20 @@ public class ComboService implements IComboService {
     public int getComboCountByStatus(String status) throws SQLException {
         return comboRepository.getComboCountByStatus(status);
     }
+
+    public List<Combo> findByKeyword(String keyword, int page, int itemsPerPage) throws SQLException {
+        return comboRepository.findByKeyword(keyword, page, itemsPerPage);
+    }
+
+    public int getTotalCombosByKeyword(String keyword) throws SQLException {
+        return comboRepository.getTotalCombosByKeyword(keyword);
+    }
+
+    public List<Combo> findByKeywordAndStatus(String keyword, String status, int page, int itemsPerPage) throws SQLException {
+        return comboRepository.findByKeywordAndStatus(keyword, status, page, itemsPerPage);
+    }
+
+    public int getTotalCombosByKeywordAndStatus(String keyword, String status) throws SQLException {
+        return comboRepository.getTotalCombosByKeywordAndStatus(keyword, status);
+    }
 }

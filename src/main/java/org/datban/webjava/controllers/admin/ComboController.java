@@ -72,19 +72,41 @@ public class ComboController extends HttpServlet {
     int currentPage = getCurrentPage(request);
     int itemsPerPage = getItemsPerPage(request);
     String status = getStatus(request);
+    String keyword = getKeyword(request);
 
     int totalItems;
     List<Combo> combos;
 
-    if (status != null && !status.equals("all")) {
+    boolean hasKeyword = keyword != null && !keyword.isEmpty();
+    boolean hasStatus = status != null && !status.equals("all");
+
+    // Lấy tổng số items trước
+    if (hasKeyword && hasStatus) {
+      totalItems = comboService.getTotalCombosByKeywordAndStatus(keyword, status);
+    } else if (hasKeyword) {
+      totalItems = comboService.getTotalCombosByKeyword(keyword);
+    } else if (hasStatus) {
       totalItems = comboService.getComboCountByStatus(status);
-      combos = comboService.getCombosByPageAndStatus(currentPage, itemsPerPage, status);
     } else {
       totalItems = comboService.getTotalCombos();
-      combos = comboService.getCombosByPage(currentPage, itemsPerPage);
     }
 
-    int totalPages = (int) Math.ceil((double) totalItems / itemsPerPage);
+    // Tính toán số trang và điều chỉnh trang hiện tại nếu cần
+    int totalPages = Math.max(1, (int) Math.ceil((double) totalItems / itemsPerPage));
+    if (currentPage > totalPages) {
+      currentPage = totalPages;
+    }
+
+    // Lấy danh sách combos sau khi đã điều chỉnh trang
+    if (hasKeyword && hasStatus) {
+      combos = comboService.findByKeywordAndStatus(keyword, status, currentPage, itemsPerPage);
+    } else if (hasKeyword) {
+      combos = comboService.findByKeyword(keyword, currentPage, itemsPerPage);
+    } else if (hasStatus) {
+      combos = comboService.getCombosByPageAndStatus(currentPage, itemsPerPage, status);
+    } else {
+      combos = comboService.getCombosByPage(currentPage, itemsPerPage);
+    }
 
     // Lấy message và error từ session
     HttpSession session = request.getSession();
@@ -98,6 +120,7 @@ public class ComboController extends HttpServlet {
     setPaginationAttributes(request, currentPage, totalPages, totalItems, itemsPerPage);
     request.setAttribute("combos", combos);
     request.setAttribute("selectedStatus", status);
+    request.setAttribute("keyword", keyword);
     request.setAttribute("message", message);
     request.setAttribute("error", error);
     setTitle(request, "Danh sách combo"); 
@@ -154,6 +177,14 @@ public class ComboController extends HttpServlet {
       return Integer.parseInt(itemsPerPageParam);
     }
     return ITEMS_PER_PAGE;
+  }
+
+  private String getKeyword(HttpServletRequest request) {
+    String keyword = request.getParameter("keyword");
+    if (keyword == null || keyword.isEmpty()) {
+      return null;
+    }
+    return keyword;
   }
 
   private void setPaginationAttributes(HttpServletRequest request, int currentPage, int totalPages, int totalItems, int itemsPerPage) {

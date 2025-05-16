@@ -88,4 +88,68 @@ public class ComboRepository extends BaseRepository<Combo, Integer> {
     }
     return 0;
   }
+
+  public List<Combo> findByKeyword(String keyword, int page, int itemsPerPage) throws SQLException {
+    int offset = (page - 1) * itemsPerPage;
+    String query = getDisplayQuery() + 
+                  " WHERE name LIKE ? " +
+                  "LIMIT ? OFFSET ?";
+    PreparedStatement statement = connection.prepareStatement(query);
+    String likePattern = "%" + keyword + "%";
+    statement.setString(1, likePattern);
+    statement.setInt(2, itemsPerPage);
+    statement.setInt(3, offset);
+    ResultSet resultSet = statement.executeQuery();
+    List<Combo> combos = new ArrayList<>();
+    while (resultSet.next()) {
+      combos.add(mapResultSetToEntity(resultSet));
+    }
+    return combos;
+  }
+
+  public int getTotalCombosByKeyword(String keyword) throws SQLException {
+    String query = "SELECT COUNT(*) FROM " + getTableName() + 
+                  " WHERE name LIKE ?";
+    PreparedStatement statement = connection.prepareStatement(query);
+    String likePattern = "%" + keyword + "%";
+    statement.setString(1, likePattern);
+    ResultSet resultSet = statement.executeQuery();
+    if (resultSet.next()) {
+      return resultSet.getInt(1);
+    }
+    return 0;
+  }
+
+  public List<Combo> findByKeywordAndStatus(String keyword, String status, int page, int itemsPerPage) throws SQLException {
+    int offset = (page - 1) * itemsPerPage;
+    String query = getDisplayQuery() + 
+                  " WHERE name LIKE ? AND status = ? " +
+                  "LIMIT ? OFFSET ?";
+    PreparedStatement statement = connection.prepareStatement(query);
+    String likePattern = "%" + keyword + "%";
+    statement.setString(1, likePattern);
+    statement.setString(2, status);
+    statement.setInt(3, itemsPerPage);
+    statement.setInt(4, offset);
+    ResultSet resultSet = statement.executeQuery();
+    List<Combo> combos = new ArrayList<>();
+    while (resultSet.next()) {
+      combos.add(mapResultSetToEntity(resultSet));
+    }
+    return combos;
+  }
+
+  public int getTotalCombosByKeywordAndStatus(String keyword, String status) throws SQLException {
+    String query = "SELECT COUNT(*) FROM " + getTableName() + 
+                  " WHERE name LIKE ? AND status = ?";
+    PreparedStatement statement = connection.prepareStatement(query);
+    String likePattern = "%" + keyword + "%";
+    statement.setString(1, likePattern);
+    statement.setString(2, status);
+    ResultSet resultSet = statement.executeQuery();
+    if (resultSet.next()) {
+      return resultSet.getInt(1);
+    }
+    return 0;
+  }
 }
