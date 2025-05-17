@@ -603,66 +603,174 @@
             </form>
 
             <script>
-              document.getElementById('reservationForm').addEventListener('submit', function(e) {
-                e.preventDefault();
+              // Biến lưu trạng thái combo và món ăn đã chọn
+              var comboOrder = {};
+              var foodOrder = {};
+              var currentMode = ''; // 'combo' hoặc 'food'
+
+              // Hàm thêm combo vào order
+              function addCombo(comboName) {
+                // Xóa các món ăn đã chọn nếu đang ở mode food
+                if (currentMode === 'food') {
+                  foodOrder = {};
+                }
+                currentMode = 'combo';
                 
-                // Lưu thông tin đặt hàng
-                var orderDetails = {};
-                if (currentMode === 'combo') {
-                  orderDetails = comboOrder;
-                  document.getElementById('orderType').value = 'combo';
+                // Lấy textarea hiển thị đơn hàng
+                var orderTextArea = document.getElementById('orderTextArea');
+
+                // Nếu combo đã có thì tăng số lượng, chưa có thì tạo mới = 1
+                if (comboOrder[comboName]) {
+                  comboOrder[comboName] += 1;
                 } else {
-                  orderDetails = foodOrder;
-                  document.getElementById('orderType').value = 'food';
+                  comboOrder[comboName] = 1;
+                }
+
+                // Tạo chuỗi hiển thị cập nhật
+                var orderText = '';
+                for (var combo in comboOrder) {
+                  orderText += combo + ' - ' + comboOrder[combo] + ' x\n';
+                }
+
+                // Cập nhật textarea
+                orderTextArea.value = orderText;
+              }
+
+              // Dish selection functionality
+              function addDish(dishName) {
+                // Xóa các combo đã chọn nếu đang ở mode combo
+                if (currentMode === 'combo') {
+                  comboOrder = {};
+                }
+                currentMode = 'food';
+                
+                // Get textarea element
+                var orderTextArea = document.getElementById('orderTextArea');
+                
+                // Check if dish already exists in order
+                if (foodOrder[dishName]) {
+                  foodOrder[dishName] += 1;
+                } else {
+                  foodOrder[dishName] = 1;
                 }
                 
-                // Chuyển object thành JSON string
-                document.getElementById('orderDetails').value = JSON.stringify(orderDetails);
-                
-                // Show loading
-                this.querySelector('.loading').classList.remove('d-none');
-                this.querySelector('.error-message').textContent = '';
-                this.querySelector('.sent-message').classList.add('d-none');
-                
-                // Get form data
-                const formData = new FormData(this);
-                
-                // Convert FormData to URL-encoded string
-                const data = new URLSearchParams(formData);
-                
-                // Send request
-                fetch(this.action, {
-                  method: 'POST',
-                  headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                  },
-                  body: data
-                })
-                .then(response => response.json())
-                .then(data => {
-                  // Hide loading
-                  this.querySelector('.loading').classList.add('d-none');
+                // Update textarea with current order
+                var orderText = '';
+                for (var dish in foodOrder) {
+                  orderText += dish + ' - ' + foodOrder[dish] + ' x\n';
+                }
+                orderTextArea.value = orderText;
+              }
+
+              // Đảm bảo chỉ có một event listener cho form đặt bàn
+              const reservationForm = document.getElementById('reservationForm');
+              if (reservationForm) {
+                reservationForm.addEventListener('submit', function(e) {
+                  e.preventDefault();
                   
-                  if (data.status === 'success') {
-                    alert('Đặt bàn thành công! Chúng tôi sẽ liên hệ với bạn sớm nhất.');
-                    this.querySelector('.sent-message').classList.remove('d-none');
-                    this.reset();
-                    // Reset orders
-                    comboOrder = {};
-                    foodOrder = {};
-                    currentMode = '';
+                  // Lưu thông tin đặt hàng
+                  var orderDetails = {};
+                  if (currentMode === 'combo') {
+                    orderDetails = comboOrder;
+                    document.getElementById('orderType').value = 'combo';
                   } else {
-                    alert(data.message || 'Có lỗi xảy ra khi đặt bàn. Vui lòng thử lại!');
-                    this.querySelector('.error-message').textContent = data.message;
+                    orderDetails = foodOrder;
+                    document.getElementById('orderType').value = 'food';
                   }
-                })
-                .catch(error => {
-                  // Hide loading
-                  this.querySelector('.loading').classList.add('d-none');
-                  alert('Có lỗi xảy ra. Vui lòng thử lại sau.');
-                  this.querySelector('.error-message').textContent = 'Có lỗi xảy ra. Vui lòng thử lại sau.';
+                  
+                  // Chuyển object thành JSON string
+                  document.getElementById('orderDetails').value = JSON.stringify(orderDetails);
+                  
+                  // Show loading
+                  this.querySelector('.loading').classList.remove('d-none');
+                  this.querySelector('.error-message').textContent = '';
+                  this.querySelector('.sent-message').classList.add('d-none');
+                  
+                  // Get form data
+                  const formData = new FormData(this);
+                  
+                  // Convert FormData to URL-encoded string
+                  const data = new URLSearchParams(formData);
+                  
+                  // Send request
+                  fetch(this.action, {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: data
+                  })
+                  .then(response => response.json())
+                  .then(data => {
+                    // Hide loading
+                    this.querySelector('.loading').classList.add('d-none');
+                    
+                    if (data.status === 'success') {
+                      alert('Đặt bàn thành công! Chúng tôi sẽ liên hệ với bạn sớm nhất.');
+                      this.querySelector('.sent-message').classList.remove('d-none');
+                      this.reset();
+                      // Reset orders
+                      comboOrder = {};
+                      foodOrder = {};
+                      currentMode = '';
+                    } else {
+                      alert(data.message || 'Có lỗi xảy ra khi đặt bàn. Vui lòng thử lại!');
+                      this.querySelector('.error-message').textContent = data.message;
+                    }
+                  })
+                  .catch(error => {
+                    // Hide loading
+                    this.querySelector('.loading').classList.add('d-none');
+                    alert('Có lỗi xảy ra. Vui lòng thử lại sau.');
+                    this.querySelector('.error-message').textContent = 'Có lỗi xảy ra. Vui lòng thử lại sau.';
+                  });
                 });
-              });
+              }
+
+              // Form submission handling for review
+              const reviewForm = document.getElementById('reviewForm');
+              if (reviewForm) {
+                reviewForm.addEventListener('submit', function(e) {
+                  e.preventDefault();
+                  
+                  // Show loading
+                  this.querySelector('.loading').classList.remove('d-none');
+                  this.querySelector('.error-message').textContent = '';
+                  this.querySelector('.sent-message').classList.add('d-none');
+                  
+                  // Get form data
+                  const formData = new FormData(this);
+                  
+                  // Convert FormData to URL-encoded string
+                  const data = new URLSearchParams(formData);
+                  
+                  // Send request
+                  fetch(this.action, {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: data
+                  })
+                  .then(response => response.json())
+                  .then(data => {
+                    // Hide loading
+                    this.querySelector('.loading').classList.add('d-none');
+                    
+                    if (data.status === 'success') {
+                      this.querySelector('.sent-message').classList.remove('d-none');
+                      this.reset();
+                    } else {
+                      this.querySelector('.error-message').textContent = data.message || 'Có lỗi xảy ra khi gửi đánh giá. Vui lòng thử lại!';
+                    }
+                  })
+                  .catch(error => {
+                    // Hide loading
+                    this.querySelector('.loading').classList.add('d-none');
+                    this.querySelector('.error-message').textContent = 'Có lỗi xảy ra. Vui lòng thử lại sau.';
+                  });
+                });
+              }
             </script>
           </div>
 
@@ -888,163 +996,6 @@
     </div>
 
   </footer>
-        <script>
-      // Biến lưu trạng thái combo và món ăn đã chọn
-      var comboOrder = {};
-      var foodOrder = {};
-      var currentMode = ''; // 'combo' hoặc 'food'
-
-      // Hàm thêm combo vào order
-      function addCombo(comboName) {
-        // Xóa các món ăn đã chọn nếu đang ở mode food
-        if (currentMode === 'food') {
-          foodOrder = {};
-        }
-        currentMode = 'combo';
-        
-        // Lấy textarea hiển thị đơn hàng
-        var orderTextArea = document.getElementById('orderTextArea');
-
-        // Nếu combo đã có thì tăng số lượng, chưa có thì tạo mới = 1
-        if (comboOrder[comboName]) {
-          comboOrder[comboName] += 1;
-        } else {
-          comboOrder[comboName] = 1;
-        }
-
-        // Tạo chuỗi hiển thị cập nhật
-        var orderText = '';
-        for (var combo in comboOrder) {
-          orderText += combo + ' - ' + comboOrder[combo] + ' x\n';
-        }
-
-        // Cập nhật textarea
-        orderTextArea.value = orderText;
-      }
-
-    </script>
-
-
-<%--  hien thi food--%>
-
-    <script>
-      // Dish selection functionality
-      function addDish(dishName) {
-        // Xóa các combo đã chọn nếu đang ở mode combo
-        if (currentMode === 'combo') {
-          comboOrder = {};
-        }
-        currentMode = 'food';
-        
-        // Get textarea element
-        var orderTextArea = document.getElementById('orderTextArea');
-        
-        // Check if dish already exists in order
-        if (foodOrder[dishName]) {
-          foodOrder[dishName] += 1;
-        } else {
-          foodOrder[dishName] = 1;
-        }
-        
-        // Update textarea with current order
-        var orderText = '';
-        for (var dish in foodOrder) {
-          orderText += dish + ' - ' + foodOrder[dish] + ' x\n';
-        }
-        orderTextArea.value = orderText;
-      }
-
-    // Form submission handling
-    document.getElementById('reservationForm').addEventListener('submit', function(e) {
-      e.preventDefault();
-      
-      // Show loading
-      this.querySelector('.loading').classList.remove('d-none');
-      this.querySelector('.error-message').textContent = '';
-      this.querySelector('.sent-message').classList.add('d-none');
-      
-      // Get form data
-      const formData = new FormData(this);
-      
-      // Convert FormData to URL-encoded string
-      const data = new URLSearchParams(formData);
-      
-      // Send request
-      fetch(this.action, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: data
-      })
-      .then(response => response.json())
-      .then(data => {
-        // Hide loading
-        this.querySelector('.loading').classList.add('d-none');
-        
-        if (data.status === 'success') {
-          // Hiển thị alert thành công
-          alert('Đặt bàn thành công! Chúng tôi sẽ liên hệ với bạn sớm nhất.');
-          this.querySelector('.sent-message').classList.remove('d-none');
-          this.reset();
-          // Reset order object
-          order = {};
-        } else {
-          // Hiển thị alert lỗi
-          alert(data.message || 'Có lỗi xảy ra khi đặt bàn. Vui lòng thử lại!');
-          this.querySelector('.error-message').textContent = data.message;
-        }
-      })
-      .catch(error => {
-        // Hide loading
-        this.querySelector('.loading').classList.add('d-none');
-        alert('Có lỗi xảy ra. Vui lòng thử lại sau.');
-        this.querySelector('.error-message').textContent = 'Có lỗi xảy ra. Vui lòng thử lại sau.';
-      });
-    });
-
-    // Form submission handling for review
-    document.getElementById('reviewForm').addEventListener('submit', function(e) {
-      e.preventDefault();
-      
-      // Show loading
-      this.querySelector('.loading').classList.remove('d-none');
-      this.querySelector('.error-message').textContent = '';
-      this.querySelector('.sent-message').classList.add('d-none');
-      
-      // Get form data
-      const formData = new FormData(this);
-      
-      // Convert FormData to URL-encoded string
-      const data = new URLSearchParams(formData);
-      
-      // Send request
-      fetch(this.action, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: data
-      })
-      .then(response => response.json())
-      .then(data => {
-        // Hide loading
-        this.querySelector('.loading').classList.add('d-none');
-        
-        if (data.status === 'success') {
-          this.querySelector('.sent-message').classList.remove('d-none');
-          this.reset();
-        } else {
-          this.querySelector('.error-message').textContent = data.message || 'Có lỗi xảy ra khi gửi đánh giá. Vui lòng thử lại!';
-        }
-      })
-      .catch(error => {
-        // Hide loading
-        this.querySelector('.loading').classList.add('d-none');
-        this.querySelector('.error-message').textContent = 'Có lỗi xảy ra. Vui lòng thử lại sau.';
-      });
-    });
-  </script>
 
   <!-- Scroll Top -->
   <a href="#" id="scroll-top" class="scroll-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>

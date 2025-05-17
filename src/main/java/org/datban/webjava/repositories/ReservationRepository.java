@@ -206,7 +206,7 @@ public class ReservationRepository extends BaseRepository<Reservation, Integer> 
             }
         }
     }
-
+// đẩy dữ liệu vào reservationFood
     public void createReservationFood(int reservationId, int foodId, int quantity) {
         String sql = "INSERT INTO reservation_food (reservation_id, food_id, quantity) VALUES (?, ?, ?)";
         try {
@@ -240,6 +240,49 @@ public class ReservationRepository extends BaseRepository<Reservation, Integer> 
         try {
             PreparedStatement statement = connection.prepareStatement(sql);
             statement.setString(1, foodName);
+            ResultSet rs = statement.executeQuery();
+            if (rs.next()) {
+                return rs.getInt("id");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return -1;
+    }
+
+    public void createReservationCombo(int reservationId, int comboId, int quantity) {
+        String sql = "INSERT INTO reservation_combo (reservation_id, combo_id, quantity) VALUES (?, ?, ?)";
+        try {
+            PreparedStatement statement = connection.prepareStatement(sql);
+            statement.setInt(1, reservationId);
+            statement.setInt(2, comboId);
+            statement.setInt(3, quantity);
+            statement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public double getComboPrice(int comboId) {
+        String sql = "SELECT price FROM combos WHERE id = ?";
+        try {
+            PreparedStatement statement = connection.prepareStatement(sql);
+            statement.setInt(1, comboId);
+            ResultSet rs = statement.executeQuery();
+            if (rs.next()) {
+                return rs.getDouble("price");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0.0;
+    }
+
+    public int getComboIdByName(String comboName) {
+        String sql = "SELECT id FROM combos WHERE name = ?";
+        try {
+            PreparedStatement statement = connection.prepareStatement(sql);
+            statement.setString(1, comboName);
             ResultSet rs = statement.executeQuery();
             if (rs.next()) {
                 return rs.getInt("id");

@@ -38,7 +38,6 @@ public class BookTableController extends HttpServlet {
             String orderDetails = request.getParameter("message");
             System.out.println(orderDetails);
             String orderType = request.getParameter("orderType");
-            System.out.println("Order type: " + orderType);
 
             // Validate dữ liệu
             if (name == null || name.trim().isEmpty() ||
@@ -56,7 +55,7 @@ public class BookTableController extends HttpServlet {
 
             // Gọi service để xử lý đặt bàn
             boolean success = reservationService.createReservation(
-                name, email, phone, date, time, numberOfPeople, orderDetails
+                name, email, phone, date, time, numberOfPeople, orderDetails, orderType
             );
 
             // Trả về kết quả
