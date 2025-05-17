@@ -88,4 +88,16 @@ public class ComboRepository extends BaseRepository<Combo, Integer> {
     }
     return 0;
   }
+
+  public List<Combo> getAvailableCombos() throws SQLException {
+    String query = getDisplayQuery() + " WHERE status = 'available' ORDER BY price ASC";
+    PreparedStatement statement = connection.prepareStatement(query);
+    ResultSet resultSet = statement.executeQuery();
+    
+    List<Combo> combos = new ArrayList<>();
+    while (resultSet.next()) {
+      combos.add(mapResultSetToEntity(resultSet));
+    }
+    return combos;
+  }
 }

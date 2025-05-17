@@ -56,4 +56,8 @@ public class ComboService implements IComboService {
     public int getComboCountByStatus(String status) throws SQLException {
         return comboRepository.getComboCountByStatus(status);
     }
+
+    public List<Combo> getAvailableCombos() throws SQLException {
+        return comboRepository.getAvailableCombos();
+    }
 }

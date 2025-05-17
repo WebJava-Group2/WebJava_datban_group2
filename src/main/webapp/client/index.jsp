@@ -4,6 +4,8 @@
 <head>
   <meta charset="utf-8">
   <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+  <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+
   <meta content="width=device-width, initial-scale=1.0" name="viewport">
   <title>Index - Yummy Bootstrap Template</title>
   <meta name="description" content="">
@@ -401,9 +403,7 @@
 
     <!-- Events Section -->
     <section id="events" class="events section">
-
       <div class="container-fluid" data-aos="fade-up" data-aos-delay="100">
-
         <div class="swiper init-swiper">
           <script type="application/json" class="swiper-config">
             {
@@ -432,44 +432,46 @@
           </script>
           <div class="swiper-wrapper">
 
-            <div class="swiper-slide event-item d-flex flex-column justify-content-end" style="background-image: url(/webjava_war_exploded/client/assets/img/events-1.jpg)">
-              <h3>Tiệc Tùy Chỉnh</h3>
-              <div class="price align-self-start">$99</div>
-              <p class="description">
-                Tổ chức tiệc theo yêu cầu với các món ăn và trang trí theo sở thích cá nhân. Chúng tôi sẽ giúp bạn tạo ra bầu không khí tuyệt vời nhất cho ngày đặc biệt.
-              </p>
-            </div><!-- End Event item -->
+            <c:forEach var="combo" items="${combos}">
+              <div class="swiper-slide event-item d-flex flex-column justify-content-end"
+                   style="background-image: url(${combo.imageUrl})"
+                   onclick="addCombo('${combo.name}')">
+                <h3>${combo.name}</h3>
+                <div class="price align-self-start">$${combo.price}</div>
+                <p class="description">${combo.description}</p>
+              </div>
+            </c:forEach>
 
-            <div class="swiper-slide event-item d-flex flex-column justify-content-end" style="background-image: url(/webjava_war_exploded/client/assets/img/events-2.jpg)">
-              <h3>Tiệc Riêng Tư</h3>
-              <div class="price align-self-start">$289</div>
-              <p class="description">
-                Dịch vụ tổ chức tiệc riêng, không gian dành riêng cho nhóm nhỏ, nơi bạn có thể thưởng thức bữa ăn ngon mà không bị làm phiền.
-              </p>
-            </div><!-- End Event item -->
 
-            <div class="swiper-slide event-item d-flex flex-column justify-content-end" style="background-image: url(/webjava_war_exploded/client/assets/img/events-3.jpg)">
-              <h3>Tiệc Sinh Nhật</h3>
-              <div class="price align-self-start">$499</div>
-              <p class="description">
-                Tổ chức tiệc sinh nhật hoàn hảo với thực đơn đặc biệt, trang trí sinh động và không gian tuyệt vời. Chúng tôi sẽ chăm sóc tất cả mọi thứ để bạn có thể tận hưởng ngày vui trọn vẹn!
-              </p>
-            </div><!-- End Event item -->
+          <%--            <div class="swiper-slide event-item d-flex flex-column justify-content-end" style="background-image: url(/webjava_war_exploded/client/assets/img/events-2.jpg)">--%>
+<%--              <h3>Tiệc Riêng Tư</h3>--%>
+<%--              <div class="price align-self-start">$289</div>--%>
+<%--              <p class="description">--%>
+<%--                Dịch vụ tổ chức tiệc riêng, không gian dành riêng cho nhóm nhỏ, nơi bạn có thể thưởng thức bữa ăn ngon mà không bị làm phiền.--%>
+<%--              </p>--%>
+<%--            </div><!-- End Event item -->--%>
 
-            <div class="swiper-slide event-item d-flex flex-column justify-content-end" style="background-image: url(/webjava_war_exploded/client/assets/img/events-4.jpg)">
-              <h3>Tiệc Cưới</h3>
-              <div class="price align-self-start">$899</div>
-              <p class="description">
-                Tổ chức tiệc cưới trọn gói với không gian trang trí lãng mạn, thực đơn món ăn tinh tế và dịch vụ chu đáo.
-              </p>
-            </div><!-- End Event item -->
+<%--            <div class="swiper-slide event-item d-flex flex-column justify-content-end" style="background-image: url(/webjava_war_exploded/client/assets/img/events-3.jpg)">--%>
+<%--              <h3>Tiệc Sinh Nhật</h3>--%>
+<%--              <div class="price align-self-start">$499</div>--%>
+<%--              <p class="description">--%>
+<%--                Tổ chức tiệc sinh nhật hoàn hảo với thực đơn đặc biệt, trang trí sinh động và không gian tuyệt vời. Chúng tôi sẽ chăm sóc tất cả mọi thứ để bạn có thể tận hưởng ngày vui trọn vẹn!--%>
+<%--              </p>--%>
+<%--            </div><!-- End Event item -->--%>
+
+<%--            <div class="swiper-slide event-item d-flex flex-column justify-content-end" style="background-image: url(/webjava_war_exploded/client/assets/img/events-4.jpg)">--%>
+<%--              <h3>Tiệc Cưới</h3>--%>
+<%--              <div class="price align-self-start">$899</div>--%>
+<%--              <p class="description">--%>
+<%--                Tổ chức tiệc cưới trọn gói với không gian trang trí lãng mạn, thực đơn món ăn tinh tế và dịch vụ chu đáo.--%>
+<%--              </p>--%>
+<%--            </div><!-- End Event item -->--%>
 
           </div>
           <div class="swiper-pagination"></div>
         </div>
 
       </div>
-
     </section><!-- /Events Section -->
 
     <!-- Chefs Section -->
@@ -821,28 +823,71 @@
     </div>
 
   </footer>
-  <script>
-    // Dish selection functionality
-    var order = {};
-    
-    function addDish(dishName) {
-      // Get textarea element
-      var orderTextArea = document.getElementById('orderTextArea');
-      
-      // Check if dish already exists in order
-      if (order[dishName]) {
-        order[dishName] += 1;
-      } else {
-        order[dishName] = 1;
+        <script>
+      // Biến lưu trạng thái combo và món ăn đã chọn
+      var comboOrder = {};
+      var foodOrder = {};
+      var currentMode = ''; // 'combo' hoặc 'food'
+
+      // Hàm thêm combo vào order
+      function addCombo(comboName) {
+        // Xóa các món ăn đã chọn nếu đang ở mode food
+        if (currentMode === 'food') {
+          foodOrder = {};
+        }
+        currentMode = 'combo';
+        
+        // Lấy textarea hiển thị đơn hàng
+        var orderTextArea = document.getElementById('orderTextArea');
+
+        // Nếu combo đã có thì tăng số lượng, chưa có thì tạo mới = 1
+        if (comboOrder[comboName]) {
+          comboOrder[comboName] += 1;
+        } else {
+          comboOrder[comboName] = 1;
+        }
+
+        // Tạo chuỗi hiển thị cập nhật
+        var orderText = '';
+        for (var combo in comboOrder) {
+          orderText += combo + ' - ' + comboOrder[combo] + ' x\n';
+        }
+
+        // Cập nhật textarea
+        orderTextArea.value = orderText;
       }
-      
-      // Update textarea with current order
-      var orderText = '';
-      for (var dish in order) {
-        orderText += dish + ' - ' + order[dish] + ' x\n';
+
+    </script>
+
+
+<%--  hien thi food--%>
+
+    <script>
+      // Dish selection functionality
+      function addDish(dishName) {
+        // Xóa các combo đã chọn nếu đang ở mode combo
+        if (currentMode === 'combo') {
+          comboOrder = {};
+        }
+        currentMode = 'food';
+        
+        // Get textarea element
+        var orderTextArea = document.getElementById('orderTextArea');
+        
+        // Check if dish already exists in order
+        if (foodOrder[dishName]) {
+          foodOrder[dishName] += 1;
+        } else {
+          foodOrder[dishName] = 1;
+        }
+        
+        // Update textarea with current order
+        var orderText = '';
+        for (var dish in foodOrder) {
+          orderText += dish + ' - ' + foodOrder[dish] + ' x\n';
+        }
+        orderTextArea.value = orderText;
       }
-      orderTextArea.value = orderText;
-    }
 
     // Form submission handling
     document.getElementById('reservationForm').addEventListener('submit', function(e) {
