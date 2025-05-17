@@ -46,7 +46,7 @@
       <a href="index.jsp" class="logo d-flex align-items-center me-auto me-xl-0">
         <!-- Uncomment the line below if you also wish to use an image logo -->
         <!-- <img src="assets/img/logo.png" alt=""> -->
-        <h1 class="sitename">Yummy</h1>
+        <h1 class="sitename">MyHanhSeaFood</h1>
         <span>.</span>
       </a>
 
@@ -58,23 +58,23 @@
           <li><a href="#events">Sự kiện</a></li>
           <li><a href="#chefs">Đầu bếp</a></li>
           <li><a href="#gallery">Trưng bày</a></li>
-          <li class="dropdown"><a href="#"><span>Dropdown</span> <i class="bi bi-chevron-down toggle-dropdown"></i></a>
-            <ul>
-              <li><a href="#">Dropdown 1</a></li>
-              <li class="dropdown"><a href="#"><span>Deep Dropdown</span> <i class="bi bi-chevron-down toggle-dropdown"></i></a>
-                <ul>
-                  <li><a href="#">Deep Dropdown 1</a></li>
-                  <li><a href="#">Deep Dropdown 2</a></li>
-                  <li><a href="#">Deep Dropdown 3</a></li>
-                  <li><a href="#">Deep Dropdown 4</a></li>
-                  <li><a href="#">Deep Dropdown 5</a></li>
-                </ul>
-              </li>
-              <li><a href="#">Dropdown 2</a></li>
-              <li><a href="#">Dropdown 3</a></li>
-              <li><a href="#">Dropdown 4</a></li>
-            </ul>
-          </li>
+<%--          <li class="dropdown"><a href="#"><span>Dropdown</span> <i class="bi bi-chevron-down toggle-dropdown"></i></a>--%>
+<%--            <ul>--%>
+<%--              <li><a href="#">Dropdown 1</a></li>--%>
+<%--              <li class="dropdown"><a href="#"><span>Deep Dropdown</span> <i class="bi bi-chevron-down toggle-dropdown"></i></a>--%>
+<%--                <ul>--%>
+<%--                  <li><a href="#">Deep Dropdown 1</a></li>--%>
+<%--                  <li><a href="#">Deep Dropdown 2</a></li>--%>
+<%--                  <li><a href="#">Deep Dropdown 3</a></li>--%>
+<%--                  <li><a href="#">Deep Dropdown 4</a></li>--%>
+<%--                  <li><a href="#">Deep Dropdown 5</a></li>--%>
+<%--                </ul>--%>
+<%--              </li>--%>
+<%--              <li><a href="#">Dropdown 2</a></li>--%>
+<%--              <li><a href="#">Dropdown 3</a></li>--%>
+<%--              <li><a href="#">Dropdown 4</a></li>--%>
+<%--            </ul>--%>
+<%--          </li>--%>
           <li><a href="#contact">Liên hệ</a></li>
         </ul>
         <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
@@ -131,7 +131,7 @@
           <div class="col-lg-5" data-aos="fade-up" data-aos-delay="250">
             <div class="content ps-0 ps-lg-5">
               <p class="fst-italic">
-                Nhà Hàng YUMMY tự hào là điểm đến lý tưởng cho những bữa tiệc gia đình, 
+                Nhà Hàng MyHanhSeaFood tự hào là điểm đến lý tưởng cho những bữa tiệc gia đình,
                 buổi hẹn hò lãng mạn, hay các cuộc gặp gỡ bạn bè.
               </p>
               <ul>
@@ -140,7 +140,7 @@
                 <li><i class="bi bi-check-circle-fill"></i> <span>Dịch vụ chuyên nghiệp – đội ngũ nhân viên tận tâm và luôn sẵn sàng phục vụ bạn mọi lúc.</span></li>
               </ul>
               <p>
-                Hãy gọi ngay để đặt bàn cho bữa tiệc tiếp theo của bạn tại Nhà Hàng YUMMY. 
+                Hãy gọi ngay để đặt bàn cho bữa tiệc tiếp theo của bạn tại Nhà Hàng MyHanhSeaFood.
                 Chúng tôi sẽ chuẩn bị mọi thứ cho một bữa ăn tuyệt vời!
               </p>
 
@@ -165,9 +165,9 @@
 
           <div class="col-lg-4" data-aos="fade-up" data-aos-delay="100">
             <div class="why-box">
-              <h3>Tại sao chọn Yummy</h3>
+              <h3>Tại sao chọn MyHanhSeaFood</h3>
               <p>
-                Nhà hàng Yummy cam kết mang đến những món ăn ngon miệng với chất lượng hàng đầu. 
+                Nhà hàng MyHanhSeaFood cam kết mang đến những món ăn ngon miệng với chất lượng hàng đầu.
                 Chúng tôi luôn tìm cách mang đến cho bạn những trải nghiệm ẩm thực tuyệt vời nhất với không gian thoải mái và dịch vụ chuyên nghiệp.
               </p>
               <div class="text-center">
@@ -261,7 +261,7 @@
       <!-- Section Title -->
       <div class="container section-title" data-aos="fade-up">
         <h2>Thực đơn của chúng tôi</h2>
-        <p><span>Xem thực đơn</span> <span class="description-title">Nhà hàng Yummy</span></p>
+        <p><span>Xem thực đơn</span> <span class="description-title">Nhà hàng MyHanhSeaFood</span></p>
       </div><!-- End Section Title -->
 
       <%@ include file="/WEB-INF/views/client/displayFood.jsp" %>
@@ -304,11 +304,11 @@
                     <div class="testimonial-content">
                       <p>
                         <i class="bi bi-quote quote-icon-left"></i>
-                        <span>Proin iaculis purus consequat sem cure digni ssim donec porttitora entum suscipit rhoncus. Accusantium quam, ultricies eget id, aliquam eget nibh et. Maecen aliquam, risus at semper.</span>
+                        <span>"Mỹ Hạnh Sea Food có không gian rộng rãi, thoáng mát và rất sạch sẽ. Hải sản tươi ngon, chế biến vừa miệng, đặc biệt là món tôm hùm và cua biển rất đậm đà. Nhân viên phục vụ nhiệt tình, thân thiện khiến tôi cảm thấy rất hài lòng. Chắc chắn sẽ quay lại lần sau!"</span>
                         <i class="bi bi-quote quote-icon-right"></i>
                       </p>
-                      <h3>Saul Goodman</h3>
-                      <h4>Ceo &amp; Founder</h4>
+                      <h3>Nguyễn Thanh Tùng</h3>
+                      <h4>Khách ăn</h4>
                       <div class="stars">
                         <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i>
                       </div>
@@ -328,11 +328,11 @@
                     <div class="testimonial-content">
                       <p>
                         <i class="bi bi-quote quote-icon-left"></i>
-                        <span>Export tempor illum tamen malis malis eram quae irure esse labore quem cillum quid cillum eram malis quorum velit fore eram velit sunt aliqua noster fugiat irure amet legam anim culpa.</span>
+                        <span>"Nhà hàng Mỹ Hạnh có thực đơn đa dạng, giá cả hợp lý so với chất lượng. Mình đặc biệt thích món sò huyết nướng mỡ hành ở đây, rất thơm ngon. Tuy nhiên, vào cuối tuần nhà hàng hơi đông, nên có lúc phải chờ lâu một chút. Nhưng tổng thể vẫn rất đáng để thử."</span>
                         <i class="bi bi-quote quote-icon-right"></i>
                       </p>
-                      <h3>Sara Wilsson</h3>
-                      <h4>Designer</h4>
+                      <h3>Lê Thị Hạnh</h3>
+                      <h4>Khách hàng</h4>
                       <div class="stars">
                         <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i>
                       </div>
@@ -352,11 +352,13 @@
                     <div class="testimonial-content">
                       <p>
                         <i class="bi bi-quote quote-icon-left"></i>
-                        <span>Enim nisi quem export duis labore cillum quae magna enim sint quorum nulla quem veniam duis minim tempor labore quem eram duis noster aute amet eram fore quis sint minim.</span>
+                        <span>"Tôi rất thích không khí ở Mỹ Hạnh Sea Food, có thể ngồi ngoài trời nhìn ra biển rất thư giãn. Hải sản được chế biến tươi mới và rất ngon. Đặc biệt, món lẩu hải sản rất đậm đà và nhiều loại tươi ngon. Nhân viên rất chu đáo, phục vụ nhanh chóng."
+
+</span>
                         <i class="bi bi-quote quote-icon-right"></i>
                       </p>
-                      <h3>Jena Karlis</h3>
-                      <h4>Store Owner</h4>
+                      <h3>Phạm Văn Dũng</h3>
+                      <h4>Khách hàng</h4>
                       <div class="stars">
                         <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i>
                       </div>
@@ -376,11 +378,13 @@
                     <div class="testimonial-content">
                       <p>
                         <i class="bi bi-quote quote-icon-left"></i>
-                        <span>Fugiat enim eram quae cillum dolore dolor amet nulla culpa multos export minim fugiat minim velit minim dolor enim duis veniam ipsum anim magna sunt elit fore quem dolore labore illum veniam.</span>
+                        <span>"Mỹ Hạnh Sea Food có vị trí đẹp, hải sản khá tươi, nhưng mình cảm thấy món ăn chưa đậm đà bằng mong đợi. Giá cả thì hơi cao so với số lượng món ăn. Phục vụ cũng ổn, nhưng cần cải thiện về tốc độ phục vụ khi đông khách."
+
+</span>
                         <i class="bi bi-quote quote-icon-right"></i>
                       </p>
-                      <h3>John Larson</h3>
-                      <h4>Entrepreneur</h4>
+                      <h3>Trần Thị Mai</h3>
+                      <h4>Khách hàng</h4>
                       <div class="stars">
                         <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i>
                       </div>
@@ -556,7 +560,7 @@
       <!-- Section Title -->
       <div class="container section-title" data-aos="fade-up">
         <h2>Đặt bàn ngay</h2>
-        <p><span>Hãy điền thông tin</span> <span class="description-title">để thưởng thức tại YUMMY<br></span></p>
+        <p><span>Hãy điền thông tin</span> <span class="description-title">để thưởng thức tại MyHanhSeaFood<br></span></p>
       </div><!-- End Section Title -->
 
       <div class="container">
@@ -851,7 +855,7 @@
       <div class="container" data-aos="fade-up" data-aos-delay="100">
 
         <div class="mb-5">
-          <iframe style="width: 100%; height: 400px;" src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d12097.433213460943!2d-74.0062269!3d40.7101282!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0xb89d1fe6bc499443!2sDowntown+Conference+Center!5e0!3m2!1smk!2sbg!4v1539943755621" frameborder="0" allowfullscreen=""></iframe>
+          <iframe style="width: 100%; height: 400px;" src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3834.0000943441482!2d108.2457453!3d16.065484899999998!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x314217ee3600dbb9%3A0xd51ecb708db1b26c!2sMy%20Hanh%20Seafood!5e0!3m2!1svi!2s!4v1706580190415!5m2!1svi!2s" frameborder="0" allowfullscreen=""></iframe>
         </div><!-- End Google Maps -->
 
         <div class="row gy-4">
@@ -861,7 +865,7 @@
               <i class="icon bi bi-geo-alt flex-shrink-0"></i>
               <div>
                 <h3>Địa chỉ</h3>
-                <p>A108 Adam Street, New York, NY 535022</p>
+                <p>Số 03-05 Võ Nguyên Giáp, Phước Mỹ, Sơn Trà, Đà Nẵng</p>
               </div>
             </div>
           </div><!-- End Info Item -->
@@ -881,7 +885,7 @@
               <i class="icon bi bi-envelope flex-shrink-0"></i>
               <div>
                 <h3>Email</h3>
-                <p>phongdh1403@gmail.com</p>
+                <p>myhanhseaFood@gmail.com</p>
               </div>
             </div>
           </div><!-- End Info Item -->
@@ -942,8 +946,8 @@
           <i class="bi bi-geo-alt icon"></i>
           <div class="address">
             <h4>Địa chỉ</h4>
-            <p>A108 Adam Street</p>
-            <p>New York, NY 535022</p>
+            <p>Số 03-05 Võ Nguyên Giáp</p>
+            <p>Phước Mỹ, Sơn Trà, Đà Nẵng</p>
             <p></p>
           </div>
 
@@ -954,8 +958,8 @@
           <div>
             <h4>Liên hệ</h4>
             <p>
-              <strong>Phone:</strong> <span>+1 5589 55488 55</span><br>
-              <strong>Email:</strong> <span>info@example.com</span><br>
+              <strong>Phone:</strong> <span>0971623584</span><br>
+              <strong>Email:</strong> <span>myhanhSeaFood@gmail.com</span><br>
             </p>
           </div>
         </div>
@@ -985,7 +989,7 @@
     </div>
 
     <div class="container copyright text-center mt-4">
-      <p>© <span>Copyright</span> <strong class="px-1 sitename">Yummy</strong> <span>All Rights Reserved</span></p>
+      <p>© <span>Copyright</span> <strong class="px-1 sitename">MyHanhSeaFood</strong> <span>All Rights Reserved</span></p>
       <div class="credits">
         <!-- All the links in the footer should remain intact. -->
         <!-- You can delete the links only if you've purchased the pro version. -->
