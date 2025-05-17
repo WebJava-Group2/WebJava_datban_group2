@@ -1,7 +1,9 @@
--- Tạo database webjava
-DROP DATABASE IF EXISTS web_java;
-CREATE DATABASE IF NOT EXISTS web_java;
-USE web_java;
+CREATE DATABASE IF NOT EXISTS `datban` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE USER IF NOT EXISTS 'default'@'%' IDENTIFIED BY 'default';
+GRANT ALL PRIVILEGES ON `datban`.* TO 'default'@'%';
+FLUSH PRIVILEGES;
+
+USE datban;
 
 -- Tạo bảng users
 CREATE TABLE users (

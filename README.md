@@ -5,6 +5,10 @@
 ## Cấu trúc thư mục
 
 ```
+.
+├── docker/
+│   ├── java/               # Cấu hình Docker cho Java
+│   └── mysql/              # Cấu hình Docker cho MySQL
 src/
 ├── main/
 │   ├── java/
@@ -30,6 +34,9 @@ src/
 │   │   └── index.jsp         # Trang chủ
 │   └── resources/
 │       └── database.properties # Cấu hình database
+├── .env                   # File cấu hình biến môi trường
+├── docker-compose.yml     # Cấu hình Docker Compose
+└── README.md
 ```
 
 ## Kiến trúc ứng dụng
@@ -81,45 +88,80 @@ src/
 - Bootstrap 5
 - jQuery
 
+# Hệ thống đặt bàn nhà hàng
+
 ## Yêu cầu hệ thống
 
-- JDK 18 trở lên
-- Maven 3.x
-- MySQL 8.0
-- Apache Tomcat 9.x
+- Docker
+- Docker Compose
 
-## Cài đặt và chạy ứng dụng
+## Cài đặt và chạy
 
-1. Clone repository:
+### 1. Sao chép file môi trường
 
 ```bash
-git clone [repository-url]
-cd webjava
+cp .env.example .env
 ```
 
-2. Cấu hình database:
+### 2. Cấu hình biến môi trường
 
-- Tạo database MySQL bằng cách dùng file [`init.sql`](./init.sql)
-- Cập nhật thông tin kết nối trong `src/main/resources/database.properties`
+Mở file `.env` và cấu hình các biến môi trường:
 
-3. Build project:
+```env
+# Java cannot read .env files.
+# When you change the environment variables above,
+# you must also update them in src/main/resources/database.properties
+DB_CONNECTION=mysql
+DB_HOST=mysql
+DB_PORT=3306
+DB_DATABASE="datban"
+DB_USERNAME="u"
+DB_PASSWORD="admin"
+DB_ROOT_PASSWORD="admin"
+
+### Docker ###
+DOCKER_APP_PORT=2000
+DOCKER_MYSQL_PORT=1000
+DOCKER_PMA_PORT=1001
+### End Docker ###x
+
+```
+
+### 3. Build và chạy container
 
 ```bash
-mvn clean install
+# Build và chạy container
+docker compose up -d
 ```
 
-4. Deploy ứng dụng:
+### 4. Dừng container
 
-- Sử dụng IDE (khuyến nghị IntelliJ IDEA):
-  - Import project as Maven project
-  - Cấu hình Tomcat server
-  - Run/Debug project
-
-5. Truy cập ứng dụng:
-
+```bash
+docker compose down
 ```
-http://localhost:8080/webjava
+
+### 5. Xóa toàn bộ dữ liệu và khởi động lại
+
+```bash
+docker compose down -v
+docker compose up -d
 ```
+
+## Truy cập ứng dụng
+
+- **Ứng dụng Web**: http://localhost:2000
+- **PHPMyAdmin**: http://localhost:1001
+  - Server: mysql
+  - Username: username
+  - Password: password
+
+## Lưu ý
+
+- Đảm bảo các cổng 2000, 1000, 1001 không bị sử dụng bởi ứng dụng khác
+- Nếu muốn thay đổi cổng, hãy cập nhật trong file `.env`
+- Database sẽ được tự động khởi tạo với dữ liệu mẫu khi chạy lần đầu
+- Tất cả dữ liệu được lưu trong Docker volume, sẽ không bị mất khi restart container
+- Để reset database, sử dụng lệnh `docker compose down -v`
 
 ## Tài liệu tham khảo
 

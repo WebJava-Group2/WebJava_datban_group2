@@ -1,0 +1,59 @@
+# docker compose up -d
+
+services:
+  java:
+    container_name: datban_java
+    build:
+      context: .
+      dockerfile: docker/java/Dockerfile
+    ports:
+      - "${DOCKER_APP_PORT:-8080}:8080"
+    restart: unless-stopped
+    environment:
+      - TZ=Asia/Ho_Chi_Minh
+    networks:
+      - datban
+    depends_on:
+      mysql:
+        condition: service_healthy
+  mysql:
+    container_name: datban_mysql
+    image: mysql:8.0
+    ports:
+      - "${DOCKER_MYSQL_PORT:-3306}:3306"
+    environment:
+      MYSQL_DATABASE: "${DB_DATABASE}"
+      MYSQL_USER: "${DB_USERNAME}"
+      MYSQL_PASSWORD: "${DB_PASSWORD}"
+      MYSQL_ROOT_PASSWORD: "${DB_ROOT_PASSWORD}"
+      TZ: "UTC"
+    volumes:
+      - datban_mysql_data:/var/lib/mysql
+      - ./docker/mysql/conf/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
+      - ./docker/mysql/conf/my.cnf:/etc/mysql/my.cnf
+    restart: unless-stopped
+    healthcheck:
+      test: mysqladmin ping -h localhost -u $$MYSQL_USER -p$$MYSQL_PASSWORD
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    networks:
+      - datban
+  phpmyadmin:
+    container_name: datban_phpmyadmin
+    depends_on:
+      - mysql
+    image: phpmyadmin
+    restart: always
+    ports:
+      - "${DOCKER_PMA_PORT:-8080}:80"
+    environment:
+      PMA_HOST: ${DB_HOST}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+    networks:
+      - datban
+volumes:
+  datban_mysql_data:
+networks:
+  datban:
+    driver: bridge
