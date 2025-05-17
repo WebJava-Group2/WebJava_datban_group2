@@ -37,6 +37,8 @@ public class BookTableController extends HttpServlet {
             System.out.println(numberOfPeople);
             String orderDetails = request.getParameter("message");
             System.out.println(orderDetails);
+            String orderType = request.getParameter("orderType");
+            System.out.println("Order type: " + orderType);
 
             // Validate dữ liệu
             if (name == null || name.trim().isEmpty() ||

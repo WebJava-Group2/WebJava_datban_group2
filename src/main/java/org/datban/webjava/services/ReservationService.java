@@ -17,6 +17,10 @@ import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.sql.Timestamp;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.Statement;
+import java.util.Map;
 
 public class ReservationService {
     private ReservationRepository reservationRepository;
@@ -161,6 +165,121 @@ public class ReservationService {
             try {
                 if (connection != null) {
                     connection.setAutoCommit(true);
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public boolean createReservationWithCombos(String name, String email, String phone, 
+                                             String date, String time, int numberOfPeople, 
+                                             String orderDetails) {
+        Connection connection = null;
+        try {
+            connection = DatabaseConnector.getConnection();
+            // Bắt đầu transaction
+            connection.setAutoCommit(false);
+
+            // Kiểm tra các trường bắt buộc
+            if (name == null || name.trim().isEmpty() ||
+                email == null || email.trim().isEmpty() ||
+                phone == null || phone.trim().isEmpty() ||
+                date == null || date.trim().isEmpty() ||
+                time == null || time.trim().isEmpty() ||
+                orderDetails == null || orderDetails.trim().isEmpty() ||
+                numberOfPeople <= 0) {
+                return false;
+            }
+
+            // Tìm user hiện có hoặc tạo mới
+            int userId;
+            User existingUser = userRepository.findByEmailOrPhone(email.trim(), phone.trim());
+            
+            if (existingUser != null) {
+                userId = existingUser.getId();
+                if (!existingUser.getName().equals(name.trim())) {
+                    existingUser.setName(name.trim());
+                    userRepository.updateUser(existingUser);
+                }
+            } else {
+                User newUser = new User();
+                newUser.setName(name.trim());
+                newUser.setEmail(email.trim());
+                newUser.setPhone(phone.trim());
+                newUser.setRole("customer");
+                newUser.setCreatedAt(new Timestamp(System.currentTimeMillis()));
+                String hashedPassword = hashedHelper.hashPassword(phone.trim());
+                newUser.setPassword(hashedPassword);
+                
+                userId = userRepository.createUser(newUser);
+                if (userId == -1) {
+                    throw new SQLException("Không thể tạo người dùng mới");
+                }
+            }
+
+            // Tạo reservation với timestamp đã gộp
+            Timestamp reservationDateTime = combineDateTime(date.trim(), time.trim());
+            if (reservationDateTime == null) {
+                throw new SQLException("Thời gian đặt bàn không hợp lệ");
+            }
+
+            // Tạo reservation mới
+            int reservationId = reservationRepository.createReservation(
+                userId,
+                reservationDateTime,
+                numberOfPeople,
+                orderDetails.trim(),
+                0.0  // Thêm tham số total
+            );
+
+            if (reservationId == -1) {
+                throw new SQLException("Không còn bàn trống trong thời gian này");
+            }
+
+            // Parse orderDetails và lưu vào reservation_combo
+            String[] lines = orderDetails.split("\\n");
+            Pattern pattern = Pattern.compile("(.*?)\\s*-\\s*(\\d+)\\s*x");
+
+            for (String line : lines) {
+                Matcher matcher = pattern.matcher(line.trim());
+                if (matcher.find()) {
+                    String comboName = matcher.group(1).trim();
+                    int quantity = Integer.parseInt(matcher.group(2));
+
+                    // Lấy combo_id từ tên combo và thêm vào reservation_combo
+                    PreparedStatement stmt = connection.prepareStatement(
+                        "INSERT INTO reservation_combo (reservation_id, combo_id, quantity) " +
+                        "SELECT ?, id, ? FROM combos WHERE name = ?"
+                    );
+                    stmt.setInt(1, reservationId);
+                    stmt.setInt(2, quantity);
+                    stmt.setString(3, comboName);
+                    stmt.executeUpdate();
+                    stmt.close();
+                }
+            }
+
+            // Commit transaction nếu mọi thứ OK
+            connection.commit();
+            return true;
+        } catch (Exception e) {
+            // Rollback transaction nếu có lỗi
+            try {
+                if (connection != null) {
+                    connection.rollback();
+                }
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
+            e.printStackTrace();
+            return false;
+        } finally {
+            // Reset auto commit và đóng connection
+            try {
+                if (connection != null) {
+                    connection.setAutoCommit(true);
+                    connection.close();
                 }
             } catch (SQLException e) {
                 e.printStackTrace();

@@ -589,7 +589,9 @@
               </div>
 
               <div class="form-group mt-3">
-                <textarea class="form-control" name="message" rows="5" id="orderTextArea" placeholder="Vui lòng chọn món trên thực đơn!" required></textarea>
+                <textarea class="form-control" name="message" rows="5" id="orderTextArea" placeholder="Vui lòng chọn món hoặc combo!" required></textarea>
+                <input type="hidden" name="orderDetails" id="orderDetails">
+                <input type="hidden" name="orderType" id="orderType">
               </div>
 
               <div class="text-center mt-3">
@@ -599,6 +601,69 @@
                 <button type="submit">Đặt bàn</button>
               </div>
             </form>
+
+            <script>
+              document.getElementById('reservationForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                // Lưu thông tin đặt hàng
+                var orderDetails = {};
+                if (currentMode === 'combo') {
+                  orderDetails = comboOrder;
+                  document.getElementById('orderType').value = 'combo';
+                } else {
+                  orderDetails = foodOrder;
+                  document.getElementById('orderType').value = 'food';
+                }
+                
+                // Chuyển object thành JSON string
+                document.getElementById('orderDetails').value = JSON.stringify(orderDetails);
+                
+                // Show loading
+                this.querySelector('.loading').classList.remove('d-none');
+                this.querySelector('.error-message').textContent = '';
+                this.querySelector('.sent-message').classList.add('d-none');
+                
+                // Get form data
+                const formData = new FormData(this);
+                
+                // Convert FormData to URL-encoded string
+                const data = new URLSearchParams(formData);
+                
+                // Send request
+                fetch(this.action, {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                  },
+                  body: data
+                })
+                .then(response => response.json())
+                .then(data => {
+                  // Hide loading
+                  this.querySelector('.loading').classList.add('d-none');
+                  
+                  if (data.status === 'success') {
+                    alert('Đặt bàn thành công! Chúng tôi sẽ liên hệ với bạn sớm nhất.');
+                    this.querySelector('.sent-message').classList.remove('d-none');
+                    this.reset();
+                    // Reset orders
+                    comboOrder = {};
+                    foodOrder = {};
+                    currentMode = '';
+                  } else {
+                    alert(data.message || 'Có lỗi xảy ra khi đặt bàn. Vui lòng thử lại!');
+                    this.querySelector('.error-message').textContent = data.message;
+                  }
+                })
+                .catch(error => {
+                  // Hide loading
+                  this.querySelector('.loading').classList.add('d-none');
+                  alert('Có lỗi xảy ra. Vui lòng thử lại sau.');
+                  this.querySelector('.error-message').textContent = 'Có lỗi xảy ra. Vui lòng thử lại sau.';
+                });
+              });
+            </script>
           </div>
 
         </div>
