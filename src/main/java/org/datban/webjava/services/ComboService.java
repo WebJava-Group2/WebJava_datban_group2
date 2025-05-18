@@ -72,4 +72,8 @@ public class ComboService implements IComboService {
     public int getTotalCombosByKeywordAndStatus(String keyword, String status) throws SQLException {
         return comboRepository.getTotalCombosByKeywordAndStatus(keyword, status);
     }
+
+    public List<Combo> getAvailableCombos() throws SQLException {
+        return comboRepository.getAvailableCombos();
+    }
 }

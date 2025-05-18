@@ -92,4 +92,31 @@ public class ReviewRepository extends BaseRepository<Reviews, Integer> {
         }
         return 0;
     }
+
+    public int createReview(Reviews review) {
+        String sql = "INSERT INTO reviews (customer_id, rating, content, created_at) VALUES (?, ?, ?, ?)";
+        try {
+            PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+            statement.setInt(1, review.getCustomerId());
+            statement.setInt(2, review.getRating());
+            statement.setString(3, review.getContent());
+            statement.setTimestamp(4, review.getCreatedAt());
+
+            int affectedRows = statement.executeUpdate();
+            if (affectedRows == 0) {
+                throw new SQLException("Creating review failed, no rows affected.");
+            }
+
+            try (ResultSet generatedKeys = statement.getGeneratedKeys()) {
+                if (generatedKeys.next()) {
+                    return generatedKeys.getInt(1);
+                } else {
+                    throw new SQLException("Creating review failed, no ID obtained.");
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return -1;
+        }
+    }
 }

@@ -125,4 +125,14 @@ public class FoodService {
   public int getTotalFoodsByKeywordAndStatusAndMealType(String keyword, String status, String mealType) throws SQLException {
     return foodRepository.getTotalFoodsByKeywordAndStatusAndMealType(keyword, status, mealType);
   }
+
+    // Lấy 6 món ăn đầu tiên cho phần gợi ý
+  public List<Food> getFirst6Foods() throws SQLException {
+    return foodRepository.getFirst6Foods();
+  }
+
+  // Lấy 6 món ăn theo loại bữa
+  public List<Food> get6FoodsByMealType(String mealType) throws SQLException {
+    return foodRepository.get6FoodsByMealType(mealType);
+  }
 }

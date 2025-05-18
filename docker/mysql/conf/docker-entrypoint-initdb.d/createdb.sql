@@ -68,7 +68,7 @@ CREATE TABLE combos (
     price FLOAT NOT NULL,
     description TEXT NOT NULL,
     status ENUM('available', 'unavailable') NOT NULL,
-    image_url VARCHAR(100) NOT NULL
+    image_url VARCHAR(255) NOT NULL
 );
 
 -- Tạo bảng food
@@ -77,7 +77,7 @@ CREATE TABLE foods (
     name VARCHAR(100) NOT NULL,
     description TEXT NOT NULL,
     price FLOAT NOT NULL,
-    image_url VARCHAR(100) NOT NULL,
+    image_url VARCHAR(255) NOT NULL,
     status ENUM('available', 'unavailable') NOT NULL,
     meal_type ENUM('breakfast', 'lunch', 'dinner', 'dessert')
 );
@@ -187,31 +187,11 @@ INSERT INTO combo_food (combo_id, food_id, quantity) VALUES
 (3, 5, 4), -- 4 Salad cho combo tiệc nhỏ
 (3, 10, 8); -- 8 Nước cam cho combo tiệc nhỏ
 
--- Chèn dữ liệu mẫu vào bảng reservations
-INSERT INTO reservations (total_people, status, reservation_at, note, total_price, created_at, customer_id) VALUES
-(2, 'confirmed', DATE_ADD(NOW(), INTERVAL 1 DAY), 'Kỷ niệm 2 năm yêu nhau', 350000, NOW(), 3),
-(4, 'confirmed', DATE_ADD(NOW(), INTERVAL 2 DAY), 'Sinh nhật con trai', 650000, NOW(), 4),
-(8, 'pending', DATE_ADD(NOW(), INTERVAL 5 DAY), 'Họp lớp', 1200000, NOW(), 5);
 
--- Chèn dữ liệu mẫu vào bảng reservation_table
-INSERT INTO reservation_table (reservation_id, table_id) VALUES
-(1, 2), -- Đặt bàn A2 cho reservation 1
-(2, 4), -- Đặt bàn B2 cho reservation 2
-(3, 6); -- Đặt bàn C2 cho reservation 3
-
--- Chèn dữ liệu mẫu vào bảng reservation_food
-INSERT INTO reservation_food (reservation_id, food_id, quantity) VALUES
-(1, 2, 2), -- 2 Cà phê sữa cho reservation 1
-(1, 4, 2), -- 2 Bánh flan cho reservation 1
-(1, 6, 2), -- 2 Mì Ý cho reservation 1
-(2, 5, 1), -- 1 Salad cho reservation 2
-(2, 8, 2), -- 2 Bò bít tết cho reservation 2
-(2, 9, 1), -- 1 Pizza cho reservation 2
-(2, 10, 4); -- 4 Nước cam cho reservation 2
-
--- Chèn dữ liệu mẫu vào bảng reservation_combo
-INSERT INTO reservation_combo (reservation_id, combo_id, quantity) VALUES
-(3, 3, 1); -- 1 Combo tiệc nhỏ cho reservation 3
+ALTER TABLE reservations
+    ADD COLUMN table_id INT,
+ADD CONSTRAINT fk_reservation_table 
+FOREIGN KEY (table_id) REFERENCES tables(id);
 
 -- Chèn dữ liệu mẫu vào bảng reviews
 INSERT INTO reviews (customer_id, rating, content, created_at) VALUES
