@@ -121,6 +121,19 @@
           session.removeAttribute("successMessage");
         }
       %>
+      <%
+        String failMessage = (String) session.getAttribute("failMessage");
+        if (failMessage != null) {
+      %>
+      <div class="alert alert-fail" id="fail-alert" style="position:relative;">
+        <span><%= failMessage %></span>
+        <button type="button" onclick="document.getElementById('fail-alert').style.display='none';"
+                style="position:absolute; right:10px; top:10px; background:transparent; border:none; font-size:20px; cursor:pointer;">&times;</button>
+      </div>
+      <%
+          session.removeAttribute("failMessage");
+        }
+      %>
       <!-- Hero Section -->
       <section id="hero" class="hero section light-background">
         <div class="container">

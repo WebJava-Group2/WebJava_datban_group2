@@ -57,17 +57,17 @@ public class BookTableController extends HttpServlet {
 //                request.setAttribute("status", "success");
 //                request.setAttribute("message", "Đặt bàn thành công!");
                 request.getSession().setAttribute("successMessage", "Đặt bàn thành công!");
+                // gọi lại trang home
                 response.sendRedirect(request.getContextPath() + "/home");
                 return;
             } else {
-                request.setAttribute("status", "error");
-                request.setAttribute("message", "Có lỗi xảy ra khi đặt bàn. Vui lòng thử lại!");
+                request.getSession().setAttribute("failMessage", "Bàn đã đầy đặt bàn không thành công!");
             }
         } catch (Exception e) {
             e.printStackTrace();
             request.setAttribute("status", "error");
             request.setAttribute("message", e.getMessage());
         }
-        request.getRequestDispatcher("/WEB-INF/views/client/index.jsp").forward(request, response);
+        response.sendRedirect(request.getContextPath() + "/home");
     }
 } 
