@@ -108,6 +108,19 @@
     </header>
 
     <main class="main">
+      <%
+        String successMessage = (String) session.getAttribute("successMessage");
+        if (successMessage != null) {
+      %>
+      <div class="alert alert-success" id="success-alert" style="position:relative;">
+        <span><%= successMessage %></span>
+        <button type="button" onclick="document.getElementById('success-alert').style.display='none';"
+                style="position:absolute; right:10px; top:10px; background:transparent; border:none; font-size:20px; cursor:pointer;">&times;</button>
+      </div>
+      <%
+          session.removeAttribute("successMessage");
+        }
+      %>
       <!-- Hero Section -->
       <section id="hero" class="hero section light-background">
         <div class="container">

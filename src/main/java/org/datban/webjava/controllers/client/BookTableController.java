@@ -54,8 +54,11 @@ public class BookTableController extends HttpServlet {
 
             // Trả về kết quả
             if (success) {
-                request.setAttribute("status", "success");
-                request.setAttribute("message", "Đặt bàn thành công!");
+//                request.setAttribute("status", "success");
+//                request.setAttribute("message", "Đặt bàn thành công!");
+                request.getSession().setAttribute("successMessage", "Đặt bàn thành công!");
+                response.sendRedirect(request.getContextPath() + "/home");
+                return;
             } else {
                 request.setAttribute("status", "error");
                 request.setAttribute("message", "Có lỗi xảy ra khi đặt bàn. Vui lòng thử lại!");
