@@ -41,6 +41,11 @@
                         <c:out value="${error}" />
                       </div>
                     </c:if>
+                    <c:if test="${message != null}">
+                      <div class="alert alert-success" role="alert">
+                        <c:out value="${message}" />
+                      </div>
+                    </c:if>
                     <form
                       action="${pageContext.request.contextPath}/admin/login"
                       method="post"

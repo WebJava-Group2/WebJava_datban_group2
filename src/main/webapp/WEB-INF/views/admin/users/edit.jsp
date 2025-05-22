@@ -30,20 +30,33 @@
                 Thông tin người dùng
             </div>
             <div class="card-body">
-                <form id="editUserForm" action="${pageContext.request.contextPath}/admin/users/${user.id}" method="post">
+                <form id="editUserForm" action="${pageContext.request.contextPath}/admin/users/${user.id}"
+                      method="post">
                     <div class="row mb-3">
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label for="name" class="form-label">Tên người dùng</label>
-                                <input type="text" class="form-control" id="name" name="name" 
-                                       value="${user.name}" required>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="name" name="name"
+                                           value="${tempUser.name == null ? user.name : tempUser.name}" required>
+                                    <span class="input-group-text reset-field" title="Reset" data-field="name"
+                                          data-original="${user.name}">
+                                        <i class="fas fa-rotate-left"></i>
+                                    </span>
+                                </div>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label for="email" class="form-label">Email</label>
-                                <input type="email" class="form-control" id="email" name="email" 
-                                       value="${user.email}" required>
+                                <div class="input-group">
+                                    <input type="email" class="form-control" id="email" name="email"
+                                           value="${tempUser.email == null ? user.email : tempUser.email}" required>
+                                    <span class="input-group-text reset-field" title="Reset" data-field="email"
+                                          data-original="${user.email}">
+                                        <i class="fas fa-rotate-left"></i>
+                                    </span>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -52,19 +65,34 @@
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label for="phone" class="form-label">Số điện thoại</label>
-                                <input type="tel" class="form-control" id="phone" name="phone" 
-                                       value="${user.phone}" required>
+                                <div class="input-group">
+                                    <input type="tel" class="form-control" id="phone" name="phone"
+                                           value="${tempUser.phone == null ? user.phone : tempUser.phone}" required>
+                                    <span class="input-group-text reset-field" title="Reset" data-field="phone"
+                                          data-original="${user.phone}">
+                                        <i class="fas fa-rotate-left"></i>
+                                    </span>
+                                </div>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label for="role" class="form-label">Vai trò</label>
-                                <select class="form-select" id="role" name="role" required
-                                ${user.email == sessionScope.adminUser.email ? 'disabled' : ''}
-                                >
-                                    <option value="admin" ${user.role == 'admin' ? 'selected' : ''}>Admin</option>
-                                    <option value="customer" ${user.role == 'customer' ? 'selected' : ''}>Customer</option>
-                                </select>
+                                <div class="input-group">
+                                    <select class="form-select" id="role" name="role" required
+                                    ${user.email == sessionScope.adminUser.email ? 'disabled' : ''}
+                                    >
+                                        <option value="admin" ${tempUser.role == null ? user.role == 'admin' ? 'selected' : '' : tempUser.role == 'admin' ? 'selected' : ''}>Admin</option>
+                                        <option value="customer" ${tempUser.role == null ? user.role == 'customer' ? 'selected' : '' : tempUser.role == 'customer' ? 'selected' : ''}>Customer</option>
+                                    </select>
+                                    <c:if test="${user.email == sessionScope.adminUser.email}">
+                                        <input type="hidden" name="role" value="${user.role}"/>
+                                    </c:if>
+                                    <span class="input-group-text reset-field" title="Reset" data-field="role"
+                                          data-original="${user.role}">
+                                        <i class="fas fa-rotate-left"></i>
+                                    </span>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -73,7 +101,7 @@
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label for="password" class="form-label">Mật khẩu mới</label>
-                                <input type="password" class="form-control" id="password" name="password" 
+                                <input type="password" class="form-control" id="password" name="password"
                                        placeholder="Để trống nếu không đổi mật khẩu">
                                 <div class="form-text">Để trống nếu không muốn thay đổi mật khẩu</div>
                             </div>
@@ -81,8 +109,8 @@
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label for="confirmPassword" class="form-label">Xác nhận mật khẩu mới</label>
-                                <input type="password" class="form-control" id="confirmPassword" 
-                                       placeholder="Xác nhận mật khẩu mới">
+                                <input type="password" class="form-control" id="confirmPassword"
+                                       placeholder="Xác nhận mật khẩu mới" name="confirmPassword">
                             </div>
                         </div>
                     </div>
@@ -98,15 +126,24 @@
 </main>
 
 <script>
-document.getElementById('editUserForm').addEventListener('submit', function(e) {
-    const password = document.getElementById('password').value;
-    const confirmPassword = document.getElementById('confirmPassword').value;
-    
-    if (password && password !== confirmPassword) {
-        e.preventDefault();
-        alert('Mật khẩu xác nhận không khớp!');
-    }
-});
+    document.addEventListener('DOMContentLoaded', function () {
+        // Xử lý sự kiện click vào nút reset (x)
+        document.querySelectorAll('.reset-field').forEach(function (button) {
+            button.addEventListener('click', function () {
+                const field = this.getAttribute('data-field');
+                const originalValue = this.getAttribute('data-original');
+
+                if (field === 'role') {
+                    const select = document.getElementById(field);
+                    for (let i = 0; i < select.options.length; i++) {
+                        select.options[i].selected = select.options[i].value === originalValue;
+                    }
+                } else {
+                    document.getElementById(field).value = originalValue;
+                }
+            });
+        });
+    });
 </script>
 
-<%@ include file="../layouts/footer.jsp" %> 
+<%@ include file="../layouts/footer.jsp" %>

@@ -90,7 +90,7 @@ public class UserRepository extends BaseRepository<User, Integer> {
   }
 
   public int getTotalUsers() throws SQLException {
-    String query = "SELECT COUNT(*) FROM " + getTableName();
+    String query = "SELECT COUNT(id) FROM " + getTableName();
     Statement statement = connection.createStatement();
     ResultSet resultSet = statement.executeQuery(query);
 
@@ -116,7 +116,7 @@ public class UserRepository extends BaseRepository<User, Integer> {
   }
 
   public int getTotalUsersByRole(String role) throws SQLException {
-    String query = "SELECT COUNT(*) FROM " + getTableName() + " WHERE role = ?";
+    String query = "SELECT COUNT(id) FROM " + getTableName() + " WHERE role = ?";
     PreparedStatement statement = connection.prepareStatement(query);
     statement.setString(1, role);
     ResultSet resultSet = statement.executeQuery();
@@ -128,7 +128,7 @@ public class UserRepository extends BaseRepository<User, Integer> {
   }
 
   public boolean checkEmailExist(String email, int id) throws SQLException {
-    String query = "SELECT COUNT(*) FROM " + getTableName() + " WHERE email = ? AND id != ?";
+    String query = "SELECT COUNT(id) FROM " + getTableName() + " WHERE email = ? AND id != ?";
     PreparedStatement statement = connection.prepareStatement(query);
     statement.setString(1, email);
     statement.setInt(2, id);
@@ -141,7 +141,7 @@ public class UserRepository extends BaseRepository<User, Integer> {
   }
 
   public boolean checkPhoneExist(String phone, int id) throws SQLException {
-    String query = "SELECT COUNT(*) FROM " + getTableName() + " WHERE phone = ? AND id != ?";
+    String query = "SELECT COUNT(id) FROM " + getTableName() + " WHERE phone = ? AND id != ?";
     PreparedStatement statement = connection.prepareStatement(query);
     statement.setString(1, phone);
     statement.setInt(2, id);
@@ -173,7 +173,7 @@ public class UserRepository extends BaseRepository<User, Integer> {
   }
 
   public int getTotalUsersByKeyword(String keyword) throws SQLException {
-    String query = "SELECT COUNT(*) FROM " + getTableName() +
+    String query = "SELECT COUNT(id) FROM " + getTableName() +
             " WHERE name LIKE ? OR email LIKE ? OR phone LIKE ?";
     PreparedStatement statement = connection.prepareStatement(query);
     String likePattern = "%" + keyword + "%";
@@ -208,7 +208,7 @@ public class UserRepository extends BaseRepository<User, Integer> {
   }
 
   public int getTotalUsersByNameEmailPhoneWithRole(String keyword, String role) throws SQLException {
-    String query = "SELECT COUNT(*) FROM " + getTableName() +
+    String query = "SELECT COUNT(id) FROM " + getTableName() +
             " WHERE (name LIKE ? OR email LIKE ? OR phone LIKE ?) AND role = ?";
     PreparedStatement statement = connection.prepareStatement(query);
     String likePattern = "%" + keyword + "%";

@@ -68,6 +68,16 @@ public class AuthController extends HttpServlet {
             response.sendRedirect(request.getContextPath() + "/admin");
             return;
         }
+        String message = (String) session.getAttribute("message");
+        if (message != null) {
+            request.setAttribute("message", message);
+            session.removeAttribute("message");
+        }
+        String error = (String) session.getAttribute("error");
+        if (error != null) {
+            request.setAttribute("error", error);
+            session.removeAttribute("error");
+        }
         request.getRequestDispatcher("/WEB-INF/views/admin/auth/login.jsp").forward(request, response);
     }
 
@@ -94,11 +104,12 @@ public class AuthController extends HttpServlet {
     }
 
     private void handleLogout(HttpServletRequest request, HttpServletResponse response)
-            throws IOException {
-        HttpSession session = request.getSession(false);
+        throws IOException, ServletException {
+        HttpSession session = request.getSession();
         if (session != null) {
             session.invalidate();
         }
-        response.sendRedirect(request.getContextPath() + "/admin/login");
+        request.setAttribute("message", "Đăng xuất thành công");
+        request.getRequestDispatcher("/WEB-INF/views/admin/auth/login.jsp").forward(request, response);
     }
 }

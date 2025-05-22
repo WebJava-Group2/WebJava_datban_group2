@@ -80,7 +80,11 @@ pageEncoding="UTF-8" %>
             <li>
               <hr class="dropdown-divider" />
             </li>
-            <li><a class="dropdown-item" href="#!">Logout</a></li>
+            <li>
+              <form action="${pageContext.request.contextPath}/admin/logout" method="post" style="margin:0;">
+                <button type="submit" class="dropdown-item" style="width:100%;text-align:left;">Logout</button>
+              </form>
+            </li>
           </ul>
         </li>
       </ul>

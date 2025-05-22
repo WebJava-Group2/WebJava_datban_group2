@@ -20,6 +20,27 @@ public class UserService {
     }
   }
 
+  private boolean isValidVNPhoneNumber(String phone) {
+    return phone.matches("(?:(\\+84|0084|0))[235789][0-9]{1,2}[0-9]{7}(?:[^\\d]+|$)");
+  }
+
+  private boolean isValidPassword(String password) {
+    return password.matches("^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$");
+  }
+
+  public boolean comparePassword(String password, String confirmPassword) {
+    return password.equals(confirmPassword);
+  }
+
+  private void checkValidUser(User user) throws IllegalArgumentException {
+    if (!isValidVNPhoneNumber(user.getPhone())) {
+      throw new IllegalArgumentException("Số điện thoại phải là số điện thoại Việt Nam hợp lệ");
+    }
+    if (!isValidPassword(user.getPassword())) {
+      throw new IllegalArgumentException("Mật khẩu phải có ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường, số và ký tự đặc biệt");
+    }
+  }
+
   public List<User> getAllUsers() throws SQLException {
     return userRepository.getAll();
   }
@@ -44,11 +65,17 @@ public class UserService {
     return userRepository.getById(id);
   }
 
-  public void createUser(User user) throws SQLException {
+  public User getUserByEmail(String email) throws SQLException {
+    return userRepository.findByEmail(email);
+  }
+
+  public void createUser(User user) throws SQLException, IllegalArgumentException {
+    checkValidUser(user);
     userRepository.insert(user);
   }
 
-  public void updateUser(User user) throws SQLException {
+  public void updateUser(User user) throws SQLException, IllegalArgumentException {
+    checkValidUser(user);
     userRepository.update(user);
   }
 
@@ -61,11 +88,13 @@ public class UserService {
   }
 
   public boolean checkEmailExist(User user) throws SQLException {
-    return userRepository.checkEmailExist(user.getEmail(), user.getId());
+    Integer userId = user.getId();
+    return userRepository.checkEmailExist(user.getEmail(), userId == null ? 0 : userId);
   }
 
   public boolean checkPhoneExist(User user) throws SQLException {
-    return userRepository.checkPhoneExist(user.getPhone(), user.getId());
+    Integer userId = user.getId();
+    return userRepository.checkPhoneExist(user.getPhone(), userId == null ? 0 : userId);
   }
 
   public List<User> findByKeyword(String keyword, int page, int itemsPerPage) throws SQLException {
