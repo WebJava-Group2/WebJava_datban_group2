@@ -15,8 +15,7 @@ public class TableRepository extends BaseRepository<Table, Integer> {
 
   @Override
   protected String getDisplayQuery() {
-    return "SELECT id, name, capacity, status, location " +
-            "FROM tables";
+    return "SELECT t.id, t.name, t.capacity, t.status, t.location FROM tables t";
   }
 
   @Override
@@ -51,6 +50,16 @@ public class TableRepository extends BaseRepository<Table, Integer> {
   @Override
   protected String getTableName() {
     return "tables";
+  }
+
+  @Override
+  public List<Table> getAll() throws SQLException {
+    return super.getAll();
+  }
+
+  @Override
+  public Table getById(Integer id) throws SQLException {
+    return super.getById(id);
   }
 
   public List<Table> getTablesByStatus(String status) throws SQLException {
@@ -89,7 +98,7 @@ public class TableRepository extends BaseRepository<Table, Integer> {
     statement.setInt(2, itemsPerPage);
     statement.setInt(3, offset);
     ResultSet resultSet = statement.executeQuery();
-    
+
     List<Table> tables = new ArrayList<>();
     while (resultSet.next()) {
       tables.add(mapResultSetToEntity(resultSet));
@@ -110,9 +119,9 @@ public class TableRepository extends BaseRepository<Table, Integer> {
 
   public List<Table> findByKeyword(String keyword, int page, int itemsPerPage) throws SQLException {
     int offset = (page - 1) * itemsPerPage;
-    String query = getDisplayQuery() + 
-                  " WHERE name LIKE ? OR location LIKE ? " +
-                  "LIMIT ? OFFSET ?";
+    String query = getDisplayQuery() +
+            " WHERE name LIKE ? OR location LIKE ? " +
+            "LIMIT ? OFFSET ?";
     PreparedStatement statement = connection.prepareStatement(query);
     String likePattern = "%" + keyword + "%";
     statement.setString(1, likePattern);
@@ -128,8 +137,8 @@ public class TableRepository extends BaseRepository<Table, Integer> {
   }
 
   public int getTotalTablesByKeyword(String keyword) throws SQLException {
-    String query = "SELECT COUNT(*) FROM " + getTableName() + 
-                  " WHERE name LIKE ? OR location LIKE ?";
+    String query = "SELECT COUNT(*) FROM " + getTableName() +
+            " WHERE name LIKE ? OR location LIKE ?";
     PreparedStatement statement = connection.prepareStatement(query);
     String likePattern = "%" + keyword + "%";
     statement.setString(1, likePattern);
@@ -143,9 +152,9 @@ public class TableRepository extends BaseRepository<Table, Integer> {
 
   public List<Table> findByKeywordAndStatus(String keyword, String status, int page, int itemsPerPage) throws SQLException {
     int offset = (page - 1) * itemsPerPage;
-    String query = getDisplayQuery() + 
-                  " WHERE (name LIKE ? OR location LIKE ?) AND status = ? " +
-                  "LIMIT ? OFFSET ?";
+    String query = getDisplayQuery() +
+            " WHERE (name LIKE ? OR location LIKE ?) AND status = ? " +
+            "LIMIT ? OFFSET ?";
     PreparedStatement statement = connection.prepareStatement(query);
     String likePattern = "%" + keyword + "%";
     statement.setString(1, likePattern);
@@ -162,8 +171,8 @@ public class TableRepository extends BaseRepository<Table, Integer> {
   }
 
   public int getTotalTablesByKeywordAndStatus(String keyword, String status) throws SQLException {
-    String query = "SELECT COUNT(*) FROM " + getTableName() + 
-                  " WHERE (name LIKE ? OR location LIKE ?) AND status = ?";
+    String query = "SELECT COUNT(*) FROM " + getTableName() +
+            " WHERE (name LIKE ? OR location LIKE ?) AND status = ?";
     PreparedStatement statement = connection.prepareStatement(query);
     String likePattern = "%" + keyword + "%";
     statement.setString(1, likePattern);

@@ -60,7 +60,18 @@ public abstract class BaseRepository<T extends IBaseModel, ID> implements IBaseR
     String query = getInsertQuery();
     PreparedStatement statement = connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
     setEntityParameters(statement, entity);
-    statement.executeUpdate();
+    int affectedRows = statement.executeUpdate();
+
+    if (affectedRows > 0) {
+      try (ResultSet generatedKeys = statement.getGeneratedKeys()) {
+        if (generatedKeys.next()) {
+          // Giả định ID là Integer, điều chỉnh nếu là loại khác. Và giả định IBaseModel có phương thức setId.
+          if (entity instanceof org.datban.webjava.models.base.IBaseModel) {
+            ((org.datban.webjava.models.base.IBaseModel) entity).setId(generatedKeys.getInt(1));
+          }
+        }
+      }
+    }
   }
 
   @Override

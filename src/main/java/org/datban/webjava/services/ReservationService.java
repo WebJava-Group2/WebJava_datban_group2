@@ -54,12 +54,7 @@ public class ReservationService {
     public boolean createReservation(String name, String email, String phone, 
                                    String date, String time, int numberOfPeople, 
                                    String orderDetails, String orderType) {
-        Connection connection = null;
         try {
-            connection = DatabaseConnector.getConnection();
-            // Bắt đầu transaction
-            connection.setAutoCommit(false);
-
             // Kiểm tra các trường bắt buộc
             if (name == null || name.trim().isEmpty() ||
                 email == null || email.trim().isEmpty() ||
@@ -157,30 +152,10 @@ public class ReservationService {
                     }
                 }
             }
-
-            // Commit transaction nếu mọi thứ OK
-            connection.commit();
             return true;
         } catch (Exception e) {
-            // Rollback transaction nếu có lỗi
-            try {
-                if (connection != null) {
-                    connection.rollback();
-                }
-            } catch (SQLException ex) {
-                ex.printStackTrace();
-            }
             e.printStackTrace();
             return false;
-        } finally {
-            // Reset auto commit và đóng connection
-            try {
-                if (connection != null) {
-                    connection.setAutoCommit(true);
-                }
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
         }
     }
 

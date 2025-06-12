@@ -112,8 +112,8 @@ pageEncoding="UTF-8" %>
             >
             <a
               class="nav-link"
-              href="${pageContext.request.contextPath}/admin/reservations/add"
-              >Thêm đặt bàn</a
+              href="${pageContext.request.contextPath}/admin/reservations/assign-table"
+              >Sơ đồ bàn</a
             >
           </nav>
         </div>

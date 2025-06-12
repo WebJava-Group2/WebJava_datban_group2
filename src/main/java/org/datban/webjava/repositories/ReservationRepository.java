@@ -14,8 +14,7 @@ public class ReservationRepository extends BaseRepository<Reservation, Integer> 
 
     @Override
     protected String getDisplayQuery() {
-        return "SELECT id, total_people, status, reservation_at, note, total_price, created_at, customer_id " +
-               "FROM reservations";
+        return "SELECT r.id, r.total_people, r.status, r.reservation_at, r.note, r.total_price, r.created_at, r.customer_id, u.name AS customerName FROM reservations r LEFT JOIN users u ON r.customer_id = u.id";
     }
 
     @Override
@@ -29,6 +28,7 @@ public class ReservationRepository extends BaseRepository<Reservation, Integer> 
         reservation.setTotalPrice(resultSet.getFloat("total_price"));
         reservation.setCreatedAt(resultSet.getTimestamp("created_at"));
         reservation.setCustomerId(resultSet.getInt("customer_id"));
+        reservation.setCustomerName(resultSet.getString("customerName"));
         return reservation;
     }
 
@@ -51,12 +51,28 @@ public class ReservationRepository extends BaseRepository<Reservation, Integer> 
         statement.setFloat(5, entity.getTotalPrice());
         statement.setTimestamp(6, entity.getCreatedAt());
         statement.setInt(7, entity.getCustomerId());
+        statement.setObject(8, entity.getTableId());
     }
 
 
     @Override
     protected String getTableName() {
         return "reservations";
+    }
+
+    @Override
+    public Reservation getById(Integer id) throws SQLException {
+        return super.getById(id);
+    }
+
+    @Override
+    public List<Reservation> getAll() throws SQLException {
+        return super.getAll();
+    }
+
+    @Override
+    public List<Reservation> getWithPaginate(int page, int itemsPerPage) throws SQLException {
+        return super.getWithPaginate(page, itemsPerPage);
     }
 
     public List<Reservation> getReservationsByUserId(int userId) throws SQLException {
@@ -166,10 +182,6 @@ public class ReservationRepository extends BaseRepository<Reservation, Integer> 
                     "total_people, note, total_price, status, created_at, table_id) " +
                     "VALUES (?, ?, ?, ?, ?, 'pending', NOW(), ?)";
         try {
-            // Bắt đầu transaction
-            connection.setAutoCommit(false);
-
-            // Tạo reservation
             PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
             statement.setInt(1, userId);
             statement.setTimestamp(2, reservationDateTime);
@@ -177,48 +189,24 @@ public class ReservationRepository extends BaseRepository<Reservation, Integer> 
             statement.setString(4, note);
             statement.setDouble(5, total);
             statement.setInt(6, tableId);
-
+            
             int affectedRows = statement.executeUpdate();
-            if (affectedRows == 0) {
-                connection.rollback();
-                return -1;
+            if (affectedRows > 0) {
+                ResultSet generatedKeys = statement.getGeneratedKeys();
+                if (generatedKeys.next()) {
+                    int reservationId = generatedKeys.getInt(1);
+                    updateTableStatus(tableId, "reserved"); // Cập nhật trạng thái bàn
+                    return reservationId;
+                }
             }
-
-            // Cập nhật trạng thái bàn thành 'reserved'
-            if (!updateTableStatus(tableId, "reserved")) {
-                connection.rollback();
-                return -1;
-            }
-
-            // Lấy ID của reservation vừa tạo
-            ResultSet generatedKeys = statement.getGeneratedKeys();
-            int reservationId = -1;
-            if (generatedKeys.next()) {
-                reservationId = generatedKeys.getInt(1);
-            }
-
-            // Commit transaction
-            connection.commit();
-            return reservationId;
         } catch (SQLException e) {
-            try {
-                connection.rollback();
-            } catch (SQLException ex) {
-                ex.printStackTrace();
-            }
             e.printStackTrace();
-            return -1;
-        } finally {
-            try {
-                connection.setAutoCommit(true);
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
         }
+        return -1; // Lỗi tạo đặt bàn
     }
-// đẩy dữ liệu vào reservationFood
+
     public void createReservationFood(int reservationId, int foodId, int quantity) {
-        String sql = "INSERT INTO reservation_food (reservation_id, food_id, quantity) VALUES (?, ?, ?)";
+        String sql = "INSERT INTO reservation_foods (reservation_id, food_id, quantity) VALUES (?, ?, ?)";
         try {
             PreparedStatement statement = connection.prepareStatement(sql);
             statement.setInt(1, reservationId);
@@ -235,9 +223,9 @@ public class ReservationRepository extends BaseRepository<Reservation, Integer> 
         try {
             PreparedStatement statement = connection.prepareStatement(sql);
             statement.setInt(1, foodId);
-            ResultSet rs = statement.executeQuery();
-            if (rs.next()) {
-                return rs.getDouble("price");
+            ResultSet resultSet = statement.executeQuery();
+            if (resultSet.next()) {
+                return resultSet.getDouble("price");
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -250,9 +238,9 @@ public class ReservationRepository extends BaseRepository<Reservation, Integer> 
         try {
             PreparedStatement statement = connection.prepareStatement(sql);
             statement.setString(1, foodName);
-            ResultSet rs = statement.executeQuery();
-            if (rs.next()) {
-                return rs.getInt("id");
+            ResultSet resultSet = statement.executeQuery();
+            if (resultSet.next()) {
+                return resultSet.getInt("id");
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -261,7 +249,7 @@ public class ReservationRepository extends BaseRepository<Reservation, Integer> 
     }
 
     public void createReservationCombo(int reservationId, int comboId, int quantity) {
-        String sql = "INSERT INTO reservation_combo (reservation_id, combo_id, quantity) VALUES (?, ?, ?)";
+        String sql = "INSERT INTO reservation_combos (reservation_id, combo_id, quantity) VALUES (?, ?, ?)";
         try {
             PreparedStatement statement = connection.prepareStatement(sql);
             statement.setInt(1, reservationId);
@@ -278,9 +266,9 @@ public class ReservationRepository extends BaseRepository<Reservation, Integer> 
         try {
             PreparedStatement statement = connection.prepareStatement(sql);
             statement.setInt(1, comboId);
-            ResultSet rs = statement.executeQuery();
-            if (rs.next()) {
-                return rs.getDouble("price");
+            ResultSet resultSet = statement.executeQuery();
+            if (resultSet.next()) {
+                return resultSet.getDouble("price");
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -293,13 +281,71 @@ public class ReservationRepository extends BaseRepository<Reservation, Integer> 
         try {
             PreparedStatement statement = connection.prepareStatement(sql);
             statement.setString(1, comboName);
-            ResultSet rs = statement.executeQuery();
-            if (rs.next()) {
-                return rs.getInt("id");
+            ResultSet resultSet = statement.executeQuery();
+            if (resultSet.next()) {
+                return resultSet.getInt("id");
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
         return -1;
+    }
+
+    public List<Reservation> getReservationsByPageAndStatus(int page, int itemsPerPage, String status) throws SQLException {
+        List<Reservation> resultList = new ArrayList<>();
+        String query = getDisplayQuery() + " WHERE r.status = ? LIMIT ? OFFSET ?";
+        PreparedStatement statement = connection.prepareStatement(query);
+        statement.setString(1, status);
+        statement.setInt(2, itemsPerPage);
+        statement.setInt(3, (page - 1) * itemsPerPage);
+        ResultSet resultSet = statement.executeQuery();
+
+        while (resultSet.next()) {
+            Reservation res = mapResultSetToEntity(resultSet);
+            res.setCustomerName(resultSet.getString("customerName"));
+            resultList.add(res);
+        }
+        return resultList;
+    }
+
+    public int getTotalReservationsByStatus(String status) throws SQLException {
+        String query = "SELECT COUNT(*) FROM " + getTableName() + " r WHERE r.status = ?";
+        PreparedStatement statement = connection.prepareStatement(query);
+        statement.setString(1, status);
+        ResultSet resultSet = statement.executeQuery();
+        
+        if (resultSet.next()) {
+            return resultSet.getInt(1);
+        }
+        return 0;
+    }
+
+    public List<Reservation> searchReservations(String keyword, int page, int itemsPerPage) throws SQLException {
+        List<Reservation> resultList = new ArrayList<>();
+        String query = getDisplayQuery() + " WHERE r.note LIKE ? OR u.name LIKE ? LIMIT ? OFFSET ?";
+        PreparedStatement statement = connection.prepareStatement(query);
+        statement.setString(1, "%" + keyword + "%");
+        statement.setString(2, "%" + keyword + "%");
+        statement.setInt(3, itemsPerPage);
+        statement.setInt(4, (page - 1) * itemsPerPage);
+        ResultSet resultSet = statement.executeQuery();
+
+        while (resultSet.next()) {
+            resultList.add(mapResultSetToEntity(resultSet));
+        }
+        return resultList;
+    }
+
+    public int getTotalSearchResults(String keyword) throws SQLException {
+        String query = "SELECT COUNT(*) FROM " + getTableName() + " r LEFT JOIN users u ON r.customer_id = u.id WHERE r.note LIKE ? OR u.name LIKE ?";
+        PreparedStatement statement = connection.prepareStatement(query);
+        statement.setString(1, "%" + keyword + "%");
+        statement.setString(2, "%" + keyword + "%");
+        ResultSet resultSet = statement.executeQuery();
+        
+        if (resultSet.next()) {
+            return resultSet.getInt(1);
+        }
+        return 0;
     }
 }
