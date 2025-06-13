@@ -78,8 +78,52 @@ public class ReservationController extends HttpServlet {
     private void handleListReservations(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
         try {
-            List<Reservation> reservations = reservationService.getAllReservations();
+            // Get pagination parameters
+            int page = 1;
+            int itemsPerPage = 10;
+            String pageStr = request.getParameter("page");
+            String itemsPerPageStr = request.getParameter("itemsPerPage");
+            String status = request.getParameter("status");
+            String keyword = request.getParameter("keyword");
+
+            if (pageStr != null && !pageStr.isEmpty()) {
+                page = Integer.parseInt(pageStr);
+            }
+            if (itemsPerPageStr != null && !itemsPerPageStr.isEmpty()) {
+                itemsPerPage = Integer.parseInt(itemsPerPageStr);
+            }
+
+            List<Reservation> reservations;
+            int totalItems;
+            int totalPages;
+
+            // Handle search if keyword exists
+            if (keyword != null && !keyword.trim().isEmpty()) {
+                reservations = reservationRepository.searchReservations(keyword.trim(), page, itemsPerPage);
+                totalItems = reservationRepository.getTotalSearchResults(keyword.trim());
+                request.setAttribute("keyword", keyword.trim());
+            }
+            // Handle status filtering
+            else if (status != null && !status.equals("all")) {
+                reservations = reservationRepository.getReservationsByPageAndStatus(page, itemsPerPage, status);
+                totalItems = reservationRepository.getTotalReservationsByStatus(status);
+                request.setAttribute("selectedStatus", status);
+            }
+            // Default case - get all reservations with pagination
+            else {
+                reservations = reservationRepository.getWithPaginate(page, itemsPerPage);
+                totalItems = reservationRepository.getTotalReservations();
+            }
+
+            totalPages = (int) Math.ceil((double) totalItems / itemsPerPage);
+
+            // Set attributes for JSP
             request.setAttribute("reservations", reservations);
+            request.setAttribute("currentPage", page);
+            request.setAttribute("itemsPerPage", itemsPerPage);
+            request.setAttribute("totalItems", totalItems);
+            request.setAttribute("totalPages", totalPages);
+
             request.getRequestDispatcher("/WEB-INF/views/admin/reservations/reservations.jsp")
                    .forward(request, response);
         } catch (SQLException e) {
