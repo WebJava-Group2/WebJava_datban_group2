@@ -1,10 +1,13 @@
 package org.datban.webjava.controllers.admin;
 
 import org.datban.webjava.services.ReservationService;
+import org.datban.webjava.services.ReservationTableService;
 import org.datban.webjava.models.Reservation;
 import org.datban.webjava.models.Table;
+import org.datban.webjava.models.ReservationTable;
 import org.datban.webjava.repositories.ReservationRepository;
 import org.datban.webjava.repositories.TableRepository;
+import org.datban.webjava.repositories.ReservationTableRepository;
 import org.datban.webjava.helpers.DatabaseConnector;
 
 import javax.servlet.ServletException;
@@ -17,189 +20,149 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
 
-@WebServlet(name = "AdminReservationController", urlPatterns = {"/admin/reservations", "/admin/reservations/assign-table"})
+@WebServlet(name = "AdminReservationController", urlPatterns = {
+    "/admin/reservations",
+    "/admin/reservations/show-table-diagram",
+    "/admin/reservations/assign-table",
+    "/admin/reservations/delete"
+})
 public class ReservationController extends HttpServlet {
     private ReservationService reservationService;
     private ReservationRepository reservationRepository;
     private TableRepository tableRepository;
+    private ReservationTableRepository reservationTableRepository;
+    private ReservationTableService reservationTableService;
 
-    public ReservationController() {
+    @Override
+    public void init() throws ServletException {
         this.reservationService = new ReservationService();
         try {
             Connection connection = DatabaseConnector.getConnection();
             this.reservationRepository = new ReservationRepository(connection);
             this.tableRepository = new TableRepository(connection);
+            this.reservationTableRepository = new ReservationTableRepository(connection);
+            this.reservationTableService = new ReservationTableService(
+                reservationTableRepository,
+                reservationRepository,
+                tableRepository
+            );
         } catch (SQLException e) {
-            e.printStackTrace();
+            throw new ServletException("Error initializing repositories", e);
         }
     }
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
-        String servletPath = request.getServletPath();
-        if (servletPath != null && servletPath.equals("/admin/reservations/assign-table")) {
-            handleAssignTableGet(request, response);
-        } else {
-            handleReservationsListGet(request, response);
-        }
-    }
-
-    private void handleReservationsListGet(HttpServletRequest request, HttpServletResponse response) 
-            throws ServletException, IOException {
-        try {
-            // Get pagination parameters
-            int currentPage = 1;
-            int recordsPerPage = 10; // Mặc định 10 mục mỗi trang
-
-            if (request.getParameter("page") != null) {
-                currentPage = Integer.parseInt(request.getParameter("page"));
-            }
-            if (request.getParameter("recordsPerPage") != null) {
-                recordsPerPage = Integer.parseInt(request.getParameter("recordsPerPage"));
-            }
-
-            // Get filter parameters
-            String statusFilter = request.getParameter("status");
-            String keyword = request.getParameter("keyword");
-
-            // Get paginated and filtered reservations
-            List<Reservation> reservations;
-            int totalReservations;
-
-            if (statusFilter != null && !statusFilter.equals("all")) {
-                reservations = reservationRepository.getReservationsByPageAndStatus(currentPage, recordsPerPage, statusFilter);
-                totalReservations = reservationRepository.getTotalReservationsByStatus(statusFilter);
-            } else if (keyword != null && !keyword.isEmpty()) {
-                reservations = reservationRepository.searchReservations(keyword, currentPage, recordsPerPage);
-                totalReservations = reservationRepository.getTotalSearchResults(keyword);
-            }
-            else {
-                reservations = reservationRepository.getReservationsByPage(currentPage, recordsPerPage);
-                totalReservations = reservationRepository.getTotalReservations();
-            }
-
-            int totalPages = (int) Math.ceil(totalReservations * 1.0 / recordsPerPage);
-
-            // Set attributes for the view
-            request.setAttribute("reservations", reservations);
-            request.setAttribute("currentPage", currentPage);
-            request.setAttribute("totalPages", totalPages);
-            request.setAttribute("itemsPerPage", recordsPerPage); // Changed from recordsPerPage to itemsPerPage for consistency with JSP
-            request.setAttribute("selectedStatus", statusFilter != null ? statusFilter : "all");
-            request.setAttribute("keyword", keyword);
-
-            // Forward to the JSP view
-            request.getRequestDispatcher("/WEB-INF/views/admin/reservations/reservations.jsp")
-                  .forward(request, response);
-        } catch (SQLException e) {
-            e.printStackTrace();
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Database error occurred");
-        }
-    }
-
-    private void handleAssignTableGet(HttpServletRequest request, HttpServletResponse response) 
-            throws ServletException, IOException {
-        try {
-            String reservationIdParam = request.getParameter("reservationId");
-            Integer reservationId = null;
-            if (reservationIdParam != null && !reservationIdParam.isEmpty()) {
-                reservationId = Integer.parseInt(reservationIdParam);
-                request.setAttribute("reservationId", reservationId);
-            }
-            
-            List<Table> tables = tableRepository.getAll();
-            request.setAttribute("tables", tables);
-
-            request.getRequestDispatcher("/WEB-INF/views/admin/reservations/table-diagram.jsp")
-                    .forward(request, response);
-        } catch (SQLException e) {
-            e.printStackTrace();
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Database error occurred");
+        String path = request.getServletPath();
+        
+        if (path.equals("/admin/reservations")) {
+            handleListReservations(request, response);
+        } else if (path.equals("/admin/reservations/show-table-diagram")) {
+            handleShowTableDiagram(request, response);
+        } else if (path.equals("/admin/reservations/delete")) {
+            handleDeleteReservation(request, response);
         }
     }
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
-        response.setContentType("application/json");
-        response.setCharacterEncoding("UTF-8");
-
-        try {
-            String pathInfo = request.getPathInfo();
-            if (pathInfo != null && pathInfo.equals("/assign-table")) {
-                handleAssignTablePost(request, response);
-            } else {
-                handleReservationStatusUpdatePost(request, response);
-            }
-        } catch (Exception e) {
-            response.getWriter().write("{\"success\": false, \"message\": \"Đã xảy ra lỗi không mong muốn trong doPost: " + e.getMessage() + "\"}");
-            e.printStackTrace();
+        String path = request.getServletPath();
+        
+        if (path.equals("/admin/reservations/assign-table")) {
+            handleAssignTablePost(request, response);
         }
     }
 
-    private void handleReservationStatusUpdatePost(HttpServletRequest request, HttpServletResponse response) 
+    private void handleListReservations(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
-        String action = request.getParameter("action");
-        
-        if ("update-status".equals(action)) {
-            try {
-                int reservationId = Integer.parseInt(request.getParameter("reservationId"));
-                String newStatus = request.getParameter("status");
-                
-                // Update reservation status
-                Reservation reservation = reservationRepository.getById(reservationId);
-                if (reservation != null) {
-                    reservation.setStatus(newStatus);
-                    reservationRepository.update(reservation);
-                }
-                
+        try {
+            List<Reservation> reservations = reservationService.getAllReservations();
+            request.setAttribute("reservations", reservations);
+            request.getRequestDispatcher("/WEB-INF/views/admin/reservations/reservations.jsp")
+                   .forward(request, response);
+        } catch (SQLException e) {
+            request.setAttribute("error", "Lỗi khi lấy danh sách đặt bàn: " + e.getMessage());
+            request.getRequestDispatcher("/WEB-INF/views/admin/reservations/reservations.jsp")
+                   .forward(request, response);
+        }
+    }
+
+    private void handleShowTableDiagram(HttpServletRequest request, HttpServletResponse response) 
+            throws ServletException, IOException {
+        try {
+            int reservationId = Integer.parseInt(request.getParameter("reservationId"));
+            
+            // Kiểm tra xem đặt bàn có tồn tại không
+            Reservation reservation = reservationRepository.getById(reservationId);
+            if (reservation == null) {
+                request.getSession().setAttribute("error", "Không tìm thấy đặt bàn");
                 response.sendRedirect(request.getContextPath() + "/admin/reservations");
-            } catch (SQLException e) {
-                e.printStackTrace();
-                response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to update reservation status");
+                return;
             }
+
+            // Kiểm tra xem đặt bàn đã được gán cho bàn nào chưa
+            List<ReservationTable> existingAssignments = reservationTableRepository.getByReservationId(reservationId);
+            if (!existingAssignments.isEmpty()) {
+                request.getSession().setAttribute("error", "Đặt bàn đã được gán cho một bàn khác");
+                response.sendRedirect(request.getContextPath() + "/admin/reservations");
+                return;
+            }
+
+            // Lấy danh sách bàn có sẵn
+            List<Table> tables = tableRepository.getAll();
+            request.setAttribute("tables", tables);
+            request.setAttribute("reservationId", reservationId);
+            request.getRequestDispatcher("/WEB-INF/views/admin/reservations/table-diagram.jsp")
+                   .forward(request, response);
+        } catch (SQLException e) {
+            request.getSession().setAttribute("error", "Lỗi khi hiển thị sơ đồ bàn: " + e.getMessage());
+            response.sendRedirect(request.getContextPath() + "/admin/reservations");
         }
     }
 
     private void handleAssignTablePost(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
-        response.setContentType("application/json");
-        response.setCharacterEncoding("UTF-8");
-
         try {
             int reservationId = Integer.parseInt(request.getParameter("reservationId"));
             int tableId = Integer.parseInt(request.getParameter("tableId"));
 
-            // Get the reservation
-            Reservation reservation = reservationRepository.getById(reservationId);
-            if (reservation == null) {
-                response.getWriter().write("{\"success\": false, \"message\": \"Đặt bàn không tồn tại.\"}");
-                return;
-            }
+            // Gọi service để gán bàn cho đặt bàn
+            reservationTableService.assignTableToReservation(reservationId, tableId);
 
-            // Assign table to reservation
-            reservation.setTableId(tableId);
-            reservationRepository.update(reservation);
-
-            // Update table status to 'reserved'
-            Table table = tableRepository.getById(tableId);
-            if (table != null) {
-                table.setStatus("reserved");
-                tableRepository.update(table);
-            }
-
-            response.getWriter().write("{\"success\": true, \"message\": \"Đặt bàn đã được thêm vào bàn thành công.\"}");
-
-        } catch (NumberFormatException e) {
-            response.getWriter().write("{\"success\": false, \"message\": \"ID đặt bàn hoặc ID bàn không hợp lệ.\"}");
-            e.printStackTrace();
+            // Thêm message thành công
+            request.getSession().setAttribute("message", "Gán bàn thành công cho đặt bàn #" + reservationId);
+            
+            // Chuyển hướng về trang danh sách đặt bàn
+            response.sendRedirect(request.getContextPath() + "/admin/reservations");
         } catch (SQLException e) {
-            response.getWriter().write("{\"success\": false, \"message\": \"Lỗi cơ sở dữ liệu: " + e.getMessage() + "\"}");
-            e.printStackTrace();
+            // Thêm message lỗi
+            request.getSession().setAttribute("error", "Lỗi: " + e.getMessage());
+            // Chuyển hướng về trang danh sách đặt bàn
+            response.sendRedirect(request.getContextPath() + "/admin/reservations");
+        }
+    }
+
+    private void handleDeleteReservation(HttpServletRequest request, HttpServletResponse response) 
+            throws ServletException, IOException {
+        try {
+            int reservationId = Integer.parseInt(request.getParameter("reservationId"));
+            
+            // Gọi service để xóa đặt bàn và cập nhật trạng thái bàn
+            reservationTableService.removeTableFromReservation(reservationId);
+
+            request.getSession().setAttribute("message", "Xóa đặt bàn #" + reservationId + " thành công.");
+            response.sendRedirect(request.getContextPath() + "/admin/reservations");
+        } catch (NumberFormatException e) {
+            request.getSession().setAttribute("error", "ID đặt bàn không hợp lệ.");
+            response.sendRedirect(request.getContextPath() + "/admin/reservations");
+        } catch (SQLException e) {
+            request.getSession().setAttribute("error", "Lỗi khi xóa đặt bàn: " + e.getMessage());
+            response.sendRedirect(request.getContextPath() + "/admin/reservations");
         } catch (Exception e) {
-            response.getWriter().write("{\"success\": false, \"message\": \"Đã xảy ra lỗi không mong muốn: " + e.getMessage() + "\"}");
-            e.printStackTrace();
+            request.getSession().setAttribute("error", "Đã xảy ra lỗi không mong muốn: " + e.getMessage());
+            response.sendRedirect(request.getContextPath() + "/admin/reservations");
         }
     }
 }

@@ -34,12 +34,12 @@ public class ReservationRepository extends BaseRepository<Reservation, Integer> 
 
     @Override
     protected String getInsertQuery() {
-        return "INSERT INTO reservations (total_people, status, reservation_at, note, total_price, created_at, customer_id) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        return "INSERT INTO reservations (total_people, status, reservation_at, note, total_price, created_at, customer_id, table_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
     }
 
     @Override
     protected String getUpdateQuery(Integer id) {
-        return "UPDATE reservations SET total_people = ?, status = ?, reservation_at = ?, note = ?, total_price = ?, customer_id = ? WHERE id = " + id;
+        return "UPDATE reservations SET total_people = ?, status = ?, reservation_at = ?, note = ?, total_price = ?, customer_id = ?, table_id = ? WHERE id = ?";
     }
 
     @Override
@@ -49,9 +49,8 @@ public class ReservationRepository extends BaseRepository<Reservation, Integer> 
         statement.setTimestamp(3, entity.getReservationAt());
         statement.setString(4, entity.getNote());
         statement.setFloat(5, entity.getTotalPrice());
-        statement.setTimestamp(6, entity.getCreatedAt());
-        statement.setInt(7, entity.getCustomerId());
-        statement.setObject(8, entity.getTableId());
+        statement.setInt(6, entity.getCustomerId());
+        statement.setObject(7, entity.getTableId());
     }
 
 
@@ -62,7 +61,15 @@ public class ReservationRepository extends BaseRepository<Reservation, Integer> 
 
     @Override
     public Reservation getById(Integer id) throws SQLException {
-        return super.getById(id);
+        String query = getDisplayQuery() + " WHERE r.id = ?";
+        System.out.println("Executing query in ReservationRepository.getById: " + query);
+        PreparedStatement statement = connection.prepareStatement(query);
+        statement.setObject(1, id);
+        ResultSet resultSet = statement.executeQuery();
+        if (resultSet.next()) {
+            return mapResultSetToEntity(resultSet);
+        }
+        return null;
     }
 
     @Override
@@ -157,18 +164,18 @@ public class ReservationRepository extends BaseRepository<Reservation, Integer> 
         return -1; // Không còn bàn trống phù hợp
     }
 
-    public boolean updateTableStatus(int tableId, String status) {
-        String sql = "UPDATE tables SET status = ? WHERE id = ?";
-        try {
-            PreparedStatement statement = connection.prepareStatement(sql);
-            statement.setString(1, status);
-            statement.setInt(2, tableId);
-            return statement.executeUpdate() > 0;
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
+//    public boolean updateTableStatus(int tableId, String status) {
+//        String sql = "UPDATE tables SET status = ? WHERE id = ?";
+//        try {
+//            PreparedStatement statement = connection.prepareStatement(sql);
+//            statement.setString(1, status);
+//            statement.setInt(2, tableId);
+//            return statement.executeUpdate() > 0;
+//        } catch (SQLException e) {
+//            e.printStackTrace();
+//            return false;
+//        }
+//    }
 
     public int createReservation(int userId, Timestamp reservationDateTime,
                                int numberOfPeople, String note, double total) {
@@ -180,7 +187,7 @@ public class ReservationRepository extends BaseRepository<Reservation, Integer> 
 
         String sql = "INSERT INTO reservations (customer_id, reservation_at, " +
                     "total_people, note, total_price, status, created_at, table_id) " +
-                    "VALUES (?, ?, ?, ?, ?, 'pending', NOW(), ?)";
+                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
         try {
             PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
             statement.setInt(1, userId);
@@ -188,25 +195,27 @@ public class ReservationRepository extends BaseRepository<Reservation, Integer> 
             statement.setInt(3, numberOfPeople);
             statement.setString(4, note);
             statement.setDouble(5, total);
-            statement.setInt(6, tableId);
+            statement.setString(6, "pending");
+            statement.setTimestamp(7, new Timestamp(System.currentTimeMillis()));
+            statement.setInt(8, tableId);
             
             int affectedRows = statement.executeUpdate();
             if (affectedRows > 0) {
                 ResultSet generatedKeys = statement.getGeneratedKeys();
                 if (generatedKeys.next()) {
                     int reservationId = generatedKeys.getInt(1);
-                    updateTableStatus(tableId, "reserved"); // Cập nhật trạng thái bàn
+                    //updateTableStatus(tableId, "reserved"); // Cập nhật trạng thái bàn
                     return reservationId;
                 }
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return -1; // Lỗi tạo đặt bàn
+        return -1;
     }
 
     public void createReservationFood(int reservationId, int foodId, int quantity) {
-        String sql = "INSERT INTO reservation_foods (reservation_id, food_id, quantity) VALUES (?, ?, ?)";
+        String sql = "INSERT INTO reservation_food (reservation_id, food_id, quantity) VALUES (?, ?, ?)";
         try {
             PreparedStatement statement = connection.prepareStatement(sql);
             statement.setInt(1, reservationId);
@@ -249,7 +258,7 @@ public class ReservationRepository extends BaseRepository<Reservation, Integer> 
     }
 
     public void createReservationCombo(int reservationId, int comboId, int quantity) {
-        String sql = "INSERT INTO reservation_combos (reservation_id, combo_id, quantity) VALUES (?, ?, ?)";
+        String sql = "INSERT INTO reservation_combo (reservation_id, combo_id, quantity) VALUES (?, ?, ?)";
         try {
             PreparedStatement statement = connection.prepareStatement(sql);
             statement.setInt(1, reservationId);
@@ -347,5 +356,21 @@ public class ReservationRepository extends BaseRepository<Reservation, Integer> 
             return resultSet.getInt(1);
         }
         return 0;
+    }
+
+    public void deleteReservationFoodByReservationId(int reservationId) throws SQLException {
+        String sql = "DELETE FROM reservation_food WHERE reservation_id = ?";
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setInt(1, reservationId);
+            statement.executeUpdate();
+        }
+    }
+
+    public void deleteReservationComboByReservationId(int reservationId) throws SQLException {
+        String sql = "DELETE FROM reservation_combo WHERE reservation_id = ?";
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setInt(1, reservationId);
+            statement.executeUpdate();
+        }
     }
 }

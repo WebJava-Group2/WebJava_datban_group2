@@ -78,8 +78,10 @@ public abstract class BaseRepository<T extends IBaseModel, ID> implements IBaseR
   public void update(T entity) throws SQLException {
     ID id = (ID) entity.getId();
     String query = getUpdateQuery(id);
+    System.out.println("DEBUG: Update query in BaseRepository.update: " + query);
     PreparedStatement statement = connection.prepareStatement(query);
     setEntityParameters(statement, entity);
+    statement.setObject(countPlaceholders(query), id);
     statement.executeUpdate();
   }
 
@@ -113,4 +115,14 @@ public abstract class BaseRepository<T extends IBaseModel, ID> implements IBaseR
   protected abstract void setEntityParameters(PreparedStatement statement, T entity) throws SQLException;
 
   protected abstract String getTableName();
+
+  private int countPlaceholders(String query) {
+    int count = 0;
+    for (char c : query.toCharArray()) {
+      if (c == '?') {
+        count++;
+      }
+    }
+    return count;
+  }
 }

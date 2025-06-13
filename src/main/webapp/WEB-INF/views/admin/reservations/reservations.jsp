@@ -153,22 +153,26 @@
               <td class="text-center align-middle">${reservation.totalPrice}</td>
               <td class="text-center align-middle">${reservation.customerName}</td>
               <td class="text-center align-middle">
-                <a
-                    href="${pageContext.request.contextPath}/admin/reservations/assign-table?reservationId=${reservation.id}"
-                    class="btn btn-primary d-flex justify-content-center align-items-center mx-auto w-fit"
-                    style="width: fit-content; height: 38px; color: #fff"
-                >
-                  <i class="fas fa-chair me-1"></i> Thêm vào bàn
+                <c:if test="${reservation.status == 'pending'}">
+                    <a href="${pageContext.request.contextPath}/admin/reservations/show-table-diagram?reservationId=${reservation.id}" 
+                       class="btn btn-primary btn-sm me-1">
+                        <i class="fas fa-chair me-1"></i> Thêm vào bàn
+                    </a>
+                </c:if>
+                <c:if test="${reservation.status == 'confirmed'}">
+                    <button type="button" class="btn btn-success btn-sm me-1" disabled>
+                        <i class="fas fa-check me-1"></i> Đã xác nhận
+                    </button>
+                </c:if>
+                <c:if test="${reservation.status == 'cancelled'}">
+                    <button type="button" class="btn btn-danger btn-sm me-1" disabled>
+                        <i class="fas fa-times me-1"></i> Đã hủy
+                    </button>
+                </c:if>
+                <a href="#" onclick="confirmDelete('${reservation.id}')" 
+                   class="btn btn-danger btn-sm">
+                    <i class="fas fa-trash-alt"></i>
                 </a>
-              </td>
-              <td class="text-center align-middle">
-                <button
-                    onclick="deleteReservation('${reservation.id}')"
-                    class="btn btn-danger d-flex justify-content-center align-items-center mx-auto w-fit"
-                    style="width: fit-content; height: 38px;"
-                >
-                  <i class="fas fa-trash"></i>
-                                        </button>
               </td>
             </tr>
           </c:forEach>
@@ -242,20 +246,12 @@
 </main>
 
     <script>
-    function deleteReservation(id) {
-        if (confirm("Bạn có chắc chắn muốn xóa đặt bàn này?")) {
-            fetch("${pageContext.request.contextPath}/admin/reservations/" + id, {
-                method: "DELETE"
-            }).then((response) => {
-                if (response.ok) {
-                    window.location.reload();
-                } else {
-                    alert("Có lỗi xảy ra khi xóa đặt bàn");
-                }
-            });
+    function confirmDelete(reservationId) {
+        if (confirm('Bạn có chắc chắn muốn xóa đặt bàn #' + reservationId + '?')) {
+            window.location.href = '${pageContext.request.contextPath}/admin/reservations/delete?reservationId=' + reservationId;
         }
     }
-
+    
     function changeItemsPerPage(value) {
         const currentUrl = new URL(window.location.href);
         currentUrl.searchParams.set("itemsPerPage", value);
@@ -304,7 +300,6 @@
         if (e.key === 'Enter') {
             search();
         }
-        });
+    });
     </script>
-
 <%@ include file="../layouts/footer.jsp" %>

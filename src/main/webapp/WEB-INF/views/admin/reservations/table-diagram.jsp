@@ -1,16 +1,15 @@
 <%@ page contentType="text/html; charset=UTF-8" language="java" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-<%@ include
-        file="../layouts/header.jsp" %>
+<%@ include file="../layouts/header.jsp" %>
 <%@ include file="../layouts/sidebar.jsp" %>
 
 <main>
     <div class="container-fluid px-4">
-        <h1 class="mt-4">Sơ đồ bàn ăn</h1>
+        <h1 class="mt-4">Chọn bàn cho đặt bàn #<c:out value="${reservationId}"/></h1>
         <ol class="breadcrumb mb-4">
             <li class="breadcrumb-item"><a href="${pageContext.request.contextPath}/admin">Dashboard</a></li>
             <li class="breadcrumb-item"><a href="${pageContext.request.contextPath}/admin/reservations">Đặt bàn</a></li>
-            <li class="breadcrumb-item active">Sơ đồ bàn ăn</li>
+            <li class="breadcrumb-item active">Chọn bàn</li>
         </ol>
 
         <c:if test="${error != null}">
@@ -19,54 +18,61 @@
             </div>
         </c:if>
 
-        <c:if test="${message != null}">
-            <div class="alert alert-success">
-                <c:out value="${message}"/>
+        <c:if test="${tables.size() == 0}">
+            <div class="alert alert-warning" role="alert">
+                Không có bàn nào có sẵn.
             </div>
         </c:if>
 
-        <div class="card mb-4">
-            <div class="card-header">
-                <i class="fas fa-chair me-1"></i>
-                Danh sách bàn ăn
-            </div>
-            <div class="card-body">
-                <div class="row row-cols-1 row-cols-md-3 g-4">
-                    <c:if test="${empty tables}">
-                        <div class="col">
-                            <div class="alert alert-info text-center" role="alert">
-                                Không có bàn nào để hiển thị.
-                            </div>
-                        </div>
-                    </c:if>
+        <c:if test="${tables.size() > 0}">
+            <form action="${pageContext.request.contextPath}/admin/reservations/assign-table" method="post">
+                <input type="hidden" name="reservationId" value="${reservationId}">
+                <div class="row">
                     <c:forEach items="${tables}" var="table">
-                        <div class="col">
-                            <div class="card h-100 table-card table-status-${table.status}">
-                                <div class="card-body d-flex flex-column justify-content-between align-items-center">
-                                    <h5 class="card-title text-center mb-0">${table.name}</h5>
-                                    <p class="card-text text-center">Sức chứa: ${table.capacity} người</p>
-                                    <p class="card-text text-center">Trạng thái:
-                                        <span class="badge ${table.status == 'available' ? 'bg-success' : (table.status == 'reserved' ? 'bg-danger' : 'bg-warning')}">
-                                            <c:choose>
-                                                <c:when test="${table.status == 'available'}">Trống</c:when>
-                                                <c:when test="${table.status == 'occupied'}">Đang có khách</c:when>
-                                                <c:when test="${table.status == 'reserved'}">Đã đặt trước</c:when>
-                                                <c:otherwise>Đang bảo trì</c:otherwise>
-                                            </c:choose>
-                                        </span>
+                        <div class="col-md-4 mb-3">
+                            <div class="card table-card table-status-<c:out value="${table.status}"/>">
+                                <div class="card-body">
+                                    <h5 class="card-title">Bàn #<c:out value="${table.id}"/> - <c:out value="${table.name}"/></h5>
+                                    <p class="card-text">
+                                        <strong>Trạng thái:</strong> 
+                                        <c:choose>
+                                            <c:when test="${table.status == 'available'}">
+                                                <span class="badge bg-success">Còn trống</span>
+                                            </c:when>
+                                            <c:when test="${table.status == 'reserved'}">
+                                                <span class="badge bg-warning">Đã đặt</span>
+                                            </c:when>
+                                            <c:when test="${table.status == 'occupied'}">
+                                                <span class="badge bg-danger">Đang sử dụng</span>
+                                            </c:when>
+                                            <c:when test="${table.status == 'maintenance'}">
+                                                <span class="badge bg-secondary">Bảo trì</span>
+                                            </c:when>
+                                        </c:choose>
                                     </p>
-                                    <c:if test="${reservationId != null && table.status == 'available'}">
-                                        <button class="btn btn-primary assign-button" data-table-id="${table.id}" data-table-name="${table.name}">Thêm vào bàn</button>
+                                    <c:if test="${table.status == 'available'}">
+                                        <button type="submit" name="tableId" value="${table.id}" 
+                                                class="btn btn-primary">
+                                            <i class="fas fa-check me-1"></i> Chọn bàn này
+                                        </button>
                                     </c:if>
-                                    <c:if test="${reservationId != null && table.status != 'available'}">
-                                        <button class="btn btn-secondary" disabled>Không thể thêm</button>
+                                    <c:if test="${table.status != 'available'}">
+                                        <button type="button" class="btn btn-secondary" disabled>
+                                            <i class="fas fa-times me-1"></i> Không thể chọn
+                                        </button>
                                     </c:if>
                                 </div>
                             </div>
                         </div>
                     </c:forEach>
                 </div>
-            </div>
+            </form>
+        </c:if>
+
+        <div class="mt-3">
+            <a href="${pageContext.request.contextPath}/admin/reservations" class="btn btn-secondary">
+                <i class="fas fa-arrow-left me-1"></i> Quay lại danh sách
+            </a>
         </div>
     </div>
 </main>
@@ -82,58 +88,21 @@
         box-shadow: 0 4px 8px rgba(0,0,0,0.1);
     }
     .table-status-available {
-        background-color: #e6ffe6; /* Light green */
-        border-color: #28a745; /* Green border */
+        background-color: #e6ffe6;
+        border-color: #28a745;
     }
     .table-status-reserved {
-        background-color: #ffe6e6; /* Light red */
-        border-color: #dc3545; /* Red border */
+        background-color: #fff8e6;
+        border-color: #ffc107;
     }
     .table-status-occupied {
-        background-color: #fff8e6; /* Light orange */
-        border-color: #ffc107; /* Orange border */
+        background-color: #ffe6e6;
+        border-color: #dc3545;
     }
     .table-status-maintenance {
-        background-color: #e6e6e6; /* Light gray */
-        border-color: #6c757d; /* Gray border */
+        background-color: #e6e6e6;
+        border-color: #6c757d;
     }
 </style>
-
-<script>
-    document.querySelectorAll('.assign-button').forEach(button => {
-        button.addEventListener('click', function() {
-            const tableId = this.dataset.tableId;
-            const tableName = this.dataset.tableName;
-            const reservationId = '${reservationId}'; // Lấy reservationId từ JSP
-
-            console.log("Reservation ID:", reservationId);
-            console.log("Table ID:", tableId);
-            console.log("Table Name:", tableName);
-
-            if (confirm(`Bạn có chắc chắn muốn thêm đặt bàn #${reservationId} vào ${tableName} (ID: ${tableId})?`)) {
-                fetch('${pageContext.request.contextPath}/admin/reservations/assign-table', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                    },
-                    body: `reservationId=${reservationId}&tableId=${tableId}`
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        alert(data.message);
-                        window.location.reload(); // Tải lại trang để cập nhật trạng thái bàn
-                    } else {
-                        alert(data.message);
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('Đã xảy ra lỗi khi thêm đặt bàn vào bàn.');
-                });
-            }
-        });
-    });
-</script>
 
 <%@ include file="../layouts/footer.jsp" %>
