@@ -9,6 +9,7 @@ import org.datban.webjava.repositories.ReservationRepository;
 import org.datban.webjava.repositories.TableRepository;
 import org.datban.webjava.repositories.ReservationTableRepository;
 import org.datban.webjava.helpers.DatabaseConnector;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -19,12 +20,14 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Map;
 
 @WebServlet(name = "AdminReservationController", urlPatterns = {
     "/admin/reservations",
     "/admin/reservations/show-table-diagram",
     "/admin/reservations/assign-table",
-    "/admin/reservations/delete"
+    "/admin/reservations/delete",
+    "/admin/reservations/monthly-revenue"
 })
 public class ReservationController extends HttpServlet {
     private ReservationService reservationService;
@@ -62,6 +65,8 @@ public class ReservationController extends HttpServlet {
             handleShowTableDiagram(request, response);
         } else if (path.equals("/admin/reservations/delete")) {
             handleDeleteReservation(request, response);
+        } else if (path.equals("/admin/reservations/monthly-revenue")) {
+            handleGetMonthlyRevenue(request, response);
         }
     }
 
@@ -207,6 +212,28 @@ public class ReservationController extends HttpServlet {
         } catch (Exception e) {
             request.getSession().setAttribute("error", "Đã xảy ra lỗi không mong muốn: " + e.getMessage());
             response.sendRedirect(request.getContextPath() + "/admin/reservations");
+        }
+    }
+
+    private void handleGetMonthlyRevenue(HttpServletRequest request, HttpServletResponse response) 
+            throws ServletException, IOException {
+        try {
+            Map<String, Double> monthlyRevenue = reservationService.getMonthlyRevenue();
+            
+            // Log the data before converting to JSON for debugging
+            System.out.println("Monthly Revenue Data from Backend: " + monthlyRevenue);
+
+            // Convert to JSON
+            ObjectMapper mapper = new ObjectMapper();
+            String jsonResponse = mapper.writeValueAsString(monthlyRevenue);
+            
+            // Set response type to JSON
+            response.setContentType("application/json");
+            response.setCharacterEncoding("UTF-8");
+            response.getWriter().write(jsonResponse);
+        } catch (SQLException e) {
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            response.getWriter().write("{\"error\": \"Error fetching revenue data\"}");
         }
     }
 }

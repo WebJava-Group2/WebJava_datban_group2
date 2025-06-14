@@ -228,4 +228,8 @@ public class ReservationService {
     public int getTotalReservations() throws SQLException {
         return reservationRepository.getTotalReservations();
     }
+
+    public Map<String, Double> getMonthlyRevenue() throws SQLException {
+        return reservationRepository.getMonthlyRevenue();
+    }
 }

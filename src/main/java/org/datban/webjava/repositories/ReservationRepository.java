@@ -3,6 +3,8 @@ package org.datban.webjava.repositories;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.LinkedHashMap;
 import org.datban.webjava.models.Reservation;
 import org.datban.webjava.repositories.base.BaseRepository;
 
@@ -372,5 +374,25 @@ public class ReservationRepository extends BaseRepository<Reservation, Integer> 
             statement.setInt(1, reservationId);
             statement.executeUpdate();
         }
+    }
+
+    public Map<String, Double> getMonthlyRevenue() throws SQLException {
+        Map<String, Double> monthlyRevenue = new LinkedHashMap<>();
+        String sql = "SELECT DATE_FORMAT(reservation_at, '%Y-%m') as month, " +
+                    "SUM(total_price) as revenue " +
+                    "FROM reservations " +
+                    "WHERE status = 'cancelled' " +
+                    "GROUP BY DATE_FORMAT(reservation_at, '%Y-%m') " +
+                    "ORDER BY month ASC";
+        
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+            ResultSet rs = statement.executeQuery();
+            while (rs.next()) {
+                String month = rs.getString("month");
+                double revenue = rs.getDouble("revenue");
+                monthlyRevenue.put(month, revenue);
+            }
+        }
+        return monthlyRevenue;
     }
 }
