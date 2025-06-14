@@ -59,6 +59,12 @@ file="layouts/sidebar.jsp" %>
           <div class="card-header">
             <i class="fas fa-chart-bar me-1"></i>
             Doanh thu các đơn theo tháng
+            <div class="float-end">
+              <button class="btn btn-sm btn-info" onclick="exportPdf()">
+                <i class="fas fa-file-pdf me-1"></i>
+                Xuất PDF
+              </button>
+            </div>
           </div>
           <div class="card-body">
             <canvas id="revenueChart" width="100%" height="40"></canvas>
@@ -68,6 +74,10 @@ file="layouts/sidebar.jsp" %>
     </div>
   </div>
 </main>
+
+<!-- Include html2canvas and jspdf libraries from CDN -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <script>
 let revenueChart;
@@ -216,6 +226,42 @@ function createRevenueChart(data) {
                 }
             }
         }
+    });
+}
+
+function exportPdf() {
+    const element = document.querySelector('main'); // Chụp toàn bộ nội dung trong thẻ <main>
+
+    html2canvas(element, {
+        scale: 2, // Tăng chất lượng ảnh chụp
+        logging: true, // Bật logging cho html2canvas
+        useCORS: true // Quan trọng nếu có hình ảnh từ các nguồn khác domain
+    }).then(canvas => {
+        const imgData = canvas.toDataURL('image/png');
+        const { jsPDF } = window.jspdf; // Lấy jsPDF từ window object
+        const pdf = new jsPDF('p', 'mm', 'a4'); // 'p' for portrait, 'mm' for units, 'a4' for size
+
+        const imgWidth = 210; // A4 width in mm
+        const pageHeight = 295; // A4 height in mm
+        const imgHeight = canvas.height * imgWidth / canvas.width; // Tính chiều cao ảnh theo tỷ lệ A4
+        let heightLeft = imgHeight;
+
+        let position = 0;
+
+        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+
+        while (heightLeft >= 0) {
+            position = heightLeft - imgHeight; // Tính toán vị trí ảnh trên trang mới
+            pdf.addPage();
+            pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+            heightLeft -= pageHeight;
+        }
+
+        pdf.save('bao-cao-dashboard.pdf'); // Tên file PDF khi tải xuống
+    }).catch(error => {
+        console.error("Error generating PDF:", error);
+        alert("Có lỗi xảy ra khi tạo PDF. Vui lòng kiểm tra console.");
     });
 }
 </script>
