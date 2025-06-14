@@ -232,4 +232,15 @@ public class ReservationService {
     public Map<String, Double> getMonthlyRevenue() throws SQLException {
         return reservationRepository.getMonthlyRevenue();
     }
+
+    public boolean softDeleteReservation(int reservationId) throws SQLException {
+        // Kiểm tra xem đơn đặt bàn có tồn tại không
+        Reservation reservation = reservationRepository.getById(reservationId);
+        if (reservation == null) {
+            return false;
+        }
+
+        // Thực hiện xóa mềm và cập nhật trạng thái bàn
+        return reservationRepository.softDeleteReservation(reservationId);
+    }
 }

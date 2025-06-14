@@ -16,7 +16,7 @@ public class ReservationRepository extends BaseRepository<Reservation, Integer> 
 
     @Override
     protected String getDisplayQuery() {
-        return "SELECT r.id, r.total_people, r.status, r.reservation_at, r.note, r.total_price, r.created_at, r.customer_id, u.name AS customerName FROM reservations r LEFT JOIN users u ON r.customer_id = u.id";
+        return "SELECT r.id, r.total_people, r.status, r.reservation_at, r.note, r.total_price, r.created_at, r.customer_id, u.name AS customerName FROM reservations r LEFT JOIN users u ON r.customer_id = u.id WHERE r.status != 'cancelled'";
     }
 
     @Override
@@ -63,13 +63,13 @@ public class ReservationRepository extends BaseRepository<Reservation, Integer> 
 
     @Override
     public Reservation getById(Integer id) throws SQLException {
-        String query = getDisplayQuery() + " WHERE r.id = ?";
-        System.out.println("Executing query in ReservationRepository.getById: " + query);
-        PreparedStatement statement = connection.prepareStatement(query);
-        statement.setObject(1, id);
-        ResultSet resultSet = statement.executeQuery();
-        if (resultSet.next()) {
-            return mapResultSetToEntity(resultSet);
+        String query = "SELECT r.id, r.total_people, r.status, r.reservation_at, r.note, r.total_price, r.created_at, r.customer_id, r.table_id, u.name AS customerName FROM reservations r LEFT JOIN users u ON r.customer_id = u.id WHERE r.id = ?";
+        try (PreparedStatement statement = connection.prepareStatement(query)) {
+            statement.setInt(1, id);
+            ResultSet resultSet = statement.executeQuery();
+            if (resultSet.next()) {
+                return mapResultSetToEntity(resultSet);
+            }
         }
         return null;
     }
@@ -166,18 +166,51 @@ public class ReservationRepository extends BaseRepository<Reservation, Integer> 
         return -1; // Không còn bàn trống phù hợp
     }
 
-//    public boolean updateTableStatus(int tableId, String status) {
-//        String sql = "UPDATE tables SET status = ? WHERE id = ?";
-//        try {
-//            PreparedStatement statement = connection.prepareStatement(sql);
-//            statement.setString(1, status);
-//            statement.setInt(2, tableId);
-//            return statement.executeUpdate() > 0;
-//        } catch (SQLException e) {
-//            e.printStackTrace();
-//            return false;
-//        }
-//    }
+    public Integer getTableIdByReservationId(int reservationId) throws SQLException {
+        String sql = "SELECT table_id FROM reservation_table WHERE reservation_id = ?";
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setInt(1, reservationId);
+            ResultSet resultSet = statement.executeQuery();
+            if (resultSet.next()) {
+                return resultSet.getInt("table_id");
+            }
+        }
+        return null;
+    }
+
+    public boolean softDeleteReservation(int reservationId) throws SQLException {
+        // Lấy table_id từ bảng reservation_table
+        Integer tableId = getTableIdByReservationId(reservationId);
+        
+        // Cập nhật trạng thái bàn về available nếu có
+        if (tableId != null) {
+            updateTableStatus(tableId, "available");
+            // Xóa liên kết trong bảng reservation_table
+            String deleteSql = "DELETE FROM reservation_table WHERE reservation_id = ?";
+            try (PreparedStatement statement = connection.prepareStatement(deleteSql)) {
+                statement.setInt(1, reservationId);
+                statement.executeUpdate();
+            }
+        }
+
+        // Cập nhật trạng thái đặt bàn thành cancelled
+        String sql = "UPDATE reservations SET status = 'cancelled' WHERE id = ?";
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setInt(1, reservationId);
+            int affectedRows = statement.executeUpdate();
+            return affectedRows > 0;
+        }
+    }
+
+    public boolean updateTableStatus(int tableId, String status) throws SQLException {
+        String sql = "UPDATE tables SET status = ? WHERE id = ?";
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, status);
+            statement.setInt(2, tableId);
+            int affectedRows = statement.executeUpdate();
+            return affectedRows > 0;
+        }
+    }
 
     public int createReservation(int userId, Timestamp reservationDateTime,
                                int numberOfPeople, String note, double total) {

@@ -198,16 +198,21 @@ public class ReservationController extends HttpServlet {
         try {
             int reservationId = Integer.parseInt(request.getParameter("reservationId"));
             
-            // Gọi service để xóa đặt bàn và cập nhật trạng thái bàn
-            reservationTableService.removeTableFromReservation(reservationId);
-
-            request.getSession().setAttribute("message", "Xóa đặt bàn #" + reservationId + " thành công.");
+            // Sử dụng phương thức xóa mềm mới
+            boolean success = reservationService.softDeleteReservation(reservationId);
+            
+            if (success) {
+                request.getSession().setAttribute("message", "Đã hủy đặt bàn #" + reservationId + " thành công.");
+            } else {
+                request.getSession().setAttribute("error", "Không thể hủy đặt bàn #" + reservationId + ".");
+            }
+            
             response.sendRedirect(request.getContextPath() + "/admin/reservations");
         } catch (NumberFormatException e) {
             request.getSession().setAttribute("error", "ID đặt bàn không hợp lệ.");
             response.sendRedirect(request.getContextPath() + "/admin/reservations");
         } catch (SQLException e) {
-            request.getSession().setAttribute("error", "Lỗi khi xóa đặt bàn: " + e.getMessage());
+            request.getSession().setAttribute("error", "Lỗi khi hủy đặt bàn: " + e.getMessage());
             response.sendRedirect(request.getContextPath() + "/admin/reservations");
         } catch (Exception e) {
             request.getSession().setAttribute("error", "Đã xảy ra lỗi không mong muốn: " + e.getMessage());
