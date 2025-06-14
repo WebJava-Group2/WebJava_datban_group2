@@ -99,20 +99,20 @@ public class ReservationController extends HttpServlet {
 
             // Handle search if keyword exists
             if (keyword != null && !keyword.trim().isEmpty()) {
-                reservations = reservationRepository.searchReservations(keyword.trim(), page, itemsPerPage);
-                totalItems = reservationRepository.getTotalSearchResults(keyword.trim());
+                reservations = reservationService.searchReservations(keyword.trim(), page, itemsPerPage);
+                totalItems = reservationService.getTotalSearchResults(keyword.trim());
                 request.setAttribute("keyword", keyword.trim());
             }
             // Handle status filtering
             else if (status != null && !status.equals("all")) {
-                reservations = reservationRepository.getReservationsByPageAndStatus(page, itemsPerPage, status);
-                totalItems = reservationRepository.getTotalReservationsByStatus(status);
+                reservations = reservationService.getReservationsByPageAndStatus(page, itemsPerPage, status);
+                totalItems = reservationService.getTotalReservationsByStatus(status);
                 request.setAttribute("selectedStatus", status);
             }
             // Default case - get all reservations with pagination
             else {
-                reservations = reservationRepository.getWithPaginate(page, itemsPerPage);
-                totalItems = reservationRepository.getTotalReservations();
+                reservations = reservationService.getReservationsWithPagination(page, itemsPerPage);
+                totalItems = reservationService.getTotalReservations();
             }
 
             totalPages = (int) Math.ceil((double) totalItems / itemsPerPage);

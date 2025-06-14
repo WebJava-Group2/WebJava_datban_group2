@@ -204,4 +204,28 @@ public class ReservationService {
     public List<Reservation> getAllReservations() throws SQLException {
         return reservationRepository.getAll();
     }
+
+    public List<Reservation> getReservationsByPageAndStatus(int page, int itemsPerPage, String status) throws SQLException {
+        return reservationRepository.getReservationsByPageAndStatus(page, itemsPerPage, status);
+    }
+
+    public int getTotalReservationsByStatus(String status) throws SQLException {
+        return reservationRepository.getTotalReservationsByStatus(status);
+    }
+
+    public List<Reservation> searchReservations(String keyword, int page, int itemsPerPage) throws SQLException {
+        return reservationRepository.searchReservations(keyword, page, itemsPerPage);
+    }
+
+    public int getTotalSearchResults(String keyword) throws SQLException {
+        return reservationRepository.getTotalSearchResults(keyword);
+    }
+
+    public List<Reservation> getReservationsWithPagination(int page, int itemsPerPage) throws SQLException {
+        return reservationRepository.getWithPaginate(page, itemsPerPage);
+    }
+
+    public int getTotalReservations() throws SQLException {
+        return reservationRepository.getTotalReservations();
+    }
 }
