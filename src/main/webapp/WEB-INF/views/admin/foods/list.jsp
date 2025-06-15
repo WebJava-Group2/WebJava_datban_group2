@@ -33,71 +33,85 @@
     >Thêm món ăn</a
     >
     
-    <div class="d-flex justify-content-between align-items-center mb-3">
-      <div class="d-flex align-items-center gap-3">
-        <div class="d-flex align-items-center">
-          <label for="mealTypeFilter" class="me-2">Lọc theo loại:</label>
-          <select class="form-select" id="mealTypeFilter" style="width: 200px">
-            <option value="all">Tất cả</option>
-            <option value="breakfast" ${selectedMealType == 'breakfast' ? 'selected' : ''}>Bữa sáng</option>
-            <option value="lunch" ${selectedMealType == 'lunch' ? 'selected' : ''}>Bữa trưa</option>
-            <option value="dinner" ${selectedMealType == 'dinner' ? 'selected' : ''}>Bữa tối</option>
-            <option value="dessert" ${selectedMealType == 'dessert' ? 'selected' : ''}>Tráng miệng</option>
-          </select>
-        </div>
-        <div class="d-flex align-items-center">
-          <label for="statusFilter" class="me-2">Trạng thái:</label>
-          <select class="form-select" id="statusFilter" style="width: 200px">
-            <option value="all">Tất cả</option>
-            <option value="available" ${selectedStatus == 'available' ? 'selected' : ''}>Đang bán</option>
-            <option value="unavailable" ${selectedStatus == 'unavailable' ? 'selected' : ''}>Hết hàng</option>
-          </select>
-        </div>
-        <div class="d-flex align-items-center">
-          <label for="itemsPerPage" class="me-2">Số item mỗi trang:</label>
-          <select class="form-select" id="itemsPerPage" style="width: 150px" onchange="changeItemsPerPage(this.value)">
-            <option value="5" ${itemsPerPage == 5 ? 'selected' : ''}>5</option>
-            <option value="10" ${itemsPerPage == 10 ? 'selected' : ''}>10</option>
-            <option value="20" ${itemsPerPage == 20 ? 'selected' : ''}>20</option>
-            <option value="50" ${itemsPerPage == 50 ? 'selected' : ''}>50</option>
-          </select>
-        </div>
-        <div class="d-flex align-items-center">
-          <label for="keyword" class="me-2">Tìm kiếm:</label>
-          <div class="input-group" style="width: 300px">
-            <div class="position-relative flex-grow-1" style="width: 250px">
+    <div class="card mb-4">
+      <div class="card-header">
+        <i class="fas fa-filter me-1"></i>
+        Bộ lọc
+      </div>
+      <div class="card-body">
+        <div class="row g-3">
+          <!-- Filter by meal type -->
+          <div class="col-md-3">
+            <label for="mealTypeFilter" class="form-label">Loại món ăn</label>
+            <select class="form-select" id="mealTypeFilter">
+              <option value="all">Tất cả</option>
+              <option value="breakfast" ${selectedMealType == 'breakfast' ? 'selected' : ''}>Bữa sáng</option>
+              <option value="lunch" ${selectedMealType == 'lunch' ? 'selected' : ''}>Bữa trưa</option>
+              <option value="dinner" ${selectedMealType == 'dinner' ? 'selected' : ''}>Bữa tối</option>
+              <option value="dessert" ${selectedMealType == 'dessert' ? 'selected' : ''}>Tráng miệng</option>
+            </select>
+          </div>
+
+          <!-- Filter by status -->
+          <div class="col-md-3">
+            <label for="statusFilter" class="form-label">Trạng thái</label>
+            <select class="form-select" id="statusFilter">
+              <option value="all">Tất cả</option>
+              <option value="available" ${selectedStatus == 'available' ? 'selected' : ''}>Đang bán</option>
+              <option value="unavailable" ${selectedStatus == 'unavailable' ? 'selected' : ''}>Hết hàng</option>
+            </select>
+          </div>
+
+          <!-- Items per page -->
+          <div class="col-md-2">
+            <label for="itemsPerPage" class="form-label">Số món/trang</label>
+            <select class="form-select" id="itemsPerPage" onchange="changeItemsPerPage(this.value)">
+              <option value="5" ${itemsPerPage == 5 ? 'selected' : ''}>5</option>
+              <option value="10" ${itemsPerPage == 10 ? 'selected' : ''}>10</option>
+              <option value="20" ${itemsPerPage == 20 ? 'selected' : ''}>20</option>
+              <option value="50" ${itemsPerPage == 50 ? 'selected' : ''}>50</option>
+            </select>
+          </div>
+
+          <!-- Search box -->
+          <div class="col-md-4">
+            <label for="keyword" class="form-label">Tìm kiếm</label>
+            <div class="input-group">
               <input
-                  type="text"
-                  class="form-control"
-                  id="keyword"
-                  placeholder="Tìm theo tên món ăn..."
-                  value="${keyword}"
+                type="text"
+                class="form-control"
+                id="keyword"
+                placeholder="Tìm theo tên món ăn..."
+                value="${keyword}"
               >
               <c:if test="${keyword != null && !empty keyword}">
                 <button
-                    type="button"
-                    class="btn-close position-absolute top-50 end-0 translate-middle-y me-2"
-                    style="display: block; padding: 0.5rem;"
-                    onclick="clearKeyword()"
-                    aria-label="Clear search"
-                ></button>
+                  type="button"
+                  class="btn btn-outline-secondary"
+                  onclick="clearKeyword()"
+                  aria-label="Clear search"
+                >
+                  <i class="fas fa-times"></i>
+                </button>
               </c:if>
+              <button class="btn btn-primary" type="button" onclick="search()">
+                <i class="fas fa-search"></i>
+              </button>
             </div>
-            <button class="btn btn-outline-secondary" type="button" onclick="search()">
-              <i class="fas fa-search"></i>
-            </button>
           </div>
         </div>
-      </div>
-      <div class="text-muted">
-        <c:choose>
-          <c:when test="${totalItems == 0}">
-            Không có kết quả nào
-          </c:when>
-          <c:otherwise>
-            Hiển thị ${(currentPage - 1) * itemsPerPage + 1} - ${currentPage * itemsPerPage > totalItems ? totalItems : currentPage * itemsPerPage} của ${totalItems} món ăn
-          </c:otherwise>
-        </c:choose>
+
+        <!-- Results summary -->
+        <div class="mt-3 text-muted">
+          <c:choose>
+            <c:when test="${totalItems == 0}">
+              Không có kết quả nào
+            </c:when>
+            <c:otherwise>
+              Hiển thị ${(currentPage - 1) * itemsPerPage + 1} - ${currentPage * itemsPerPage > totalItems ? totalItems : currentPage * itemsPerPage} của ${totalItems} món ăn
+            </c:otherwise>
+          </c:choose>
+        </div>
       </div>
     </div>
     
