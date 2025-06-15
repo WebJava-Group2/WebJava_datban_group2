@@ -17,7 +17,7 @@
         <c:out value="${error}"/>
       </div>
     </c:if>
-    <form id="editForm" action="${pageContext.request.contextPath}/admin/combos/${combo.id}" method="POST">
+    <form id="editForm" action="${pageContext.request.contextPath}/admin/combos/${combo.id}" method="POST" class="mb-4">
       <div class="card mb-4">
         <div class="card-header">
           <i class="fas fa-edit me-1"></i>
@@ -45,11 +45,30 @@
               </div>
 
               <div class="mb-3">
-                <label for="price" class="form-label">Giá</label>
-                <div class="input-group">
-                  <input type="number" class="form-control" id="price" name="price" value="${combo.price}"
-                         required>
-                  <span class="input-group-text">VND</span>
+                <label class="form-label">Giá</label>
+                <div class="row">
+                  <div class="col-md-4">
+                    <div class="input-group">
+                      <span class="input-group-text">Giá gốc</span>
+                      <input type="text" class="form-control" id="originalPrice" disabled>
+                      <span class="input-group-text">VND</span>
+                    </div>
+                  </div>
+                  <div class="col-md-4">
+                    <div class="input-group">
+                      <span class="input-group-text">Giá combo</span>
+                      <input type="number" class="form-control" id="price" name="price" value="${combo.price}"
+                             required onchange="calculateDiscount()">
+                      <span class="input-group-text">VND</span>
+                    </div>
+                  </div>
+                  <div class="col-md-4">
+                    <div class="input-group">
+                      <span class="input-group-text">Chênh lệch</span>
+                      <input type="text" class="form-control fw-bold" id="discountPercentage" disabled>
+                      <span class="input-group-text">%</span>
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -93,13 +112,13 @@
           <input type="hidden" name="foodQuantities" id="foodQuantities" value="55-4">
         </div>
       </div>
-
-      <%@ include file="edit-combo-food.jsp" %>
       <div class="mt-3">
         <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
         <a href="${pageContext.request.contextPath}/admin/combos" class="btn btn-secondary">Hủy</a>
       </div>
     </form>
+    <%@ include file="edit-combo-food.jsp" %>
+      
   </div>
 </main>
 <script src="${pageContext.request.contextPath}/resources/js/combo-edit.js"></script>

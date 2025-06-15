@@ -7,6 +7,9 @@ const CONSTANTS = {
     IMAGE_PREVIEW: "#imagePreview",
     IMAGE_URL: "#imageUrl",
     FOOD_QUANTITIES: "#foodQuantities",
+    ORIGINAL_PRICE: "#originalPrice",
+    COMBO_PRICE: "#price",
+    DISCOUNT_PERCENTAGE: "#discountPercentage",
   },
   CLASSES: {
     SELECTED_ROW: "table-success",
@@ -40,6 +43,69 @@ function updateTotalPrice(row, quantity, price) {
   row.querySelector(
     ".total-price"
   ).textContent = `${totalPrice} ${CONSTANTS.CURRENCY}`;
+}
+
+function calculateTotalOriginalPrice() {
+  let totalPrice = 0;
+  document.querySelectorAll("tr[data-food-id]").forEach((row) => {
+    const checkbox = row.querySelector('input[type="checkbox"]');
+    if (checkbox?.checked) {
+      const quantity =
+        parseInt(row.querySelector(".quantity-input").value) || 0;
+      const price =
+        parseFloat(row.querySelector("td:nth-child(8)").textContent) || 0;
+      totalPrice += quantity * price;
+    }
+  });
+  return totalPrice;
+}
+
+function formatNumber(number) {
+  return new Intl.NumberFormat("vi-VN").format(number);
+}
+
+function calculateDiscount() {
+  const originalPrice = calculateTotalOriginalPrice();
+  const comboPrice =
+    parseFloat(document.querySelector(CONSTANTS.SELECTORS.COMBO_PRICE).value) ||
+    0;
+
+  // Cập nhật giá gốc
+  document.querySelector(CONSTANTS.SELECTORS.ORIGINAL_PRICE).value =
+    formatNumber(originalPrice);
+
+  // Tính và cập nhật phần trăm giảm giá/tăng giá
+  if (originalPrice > 0 && comboPrice > 0) {
+    const percentageDiff = (
+      ((comboPrice - originalPrice) / originalPrice) *
+      100
+    ).toFixed(1);
+    const discountInput = document.querySelector(
+      CONSTANTS.SELECTORS.DISCOUNT_PERCENTAGE
+    );
+
+    if (comboPrice > originalPrice) {
+      // Tăng giá
+      discountInput.value = `+${percentageDiff}`;
+      discountInput.classList.remove("text-success");
+      discountInput.classList.add("text-danger");
+    } else if (comboPrice < originalPrice) {
+      // Giảm giá
+      discountInput.value = percentageDiff;
+      discountInput.classList.remove("text-danger");
+      discountInput.classList.add("text-success");
+    } else {
+      // Giá không đổi
+      discountInput.value = "0.0";
+      discountInput.classList.remove("text-danger", "text-success");
+    }
+  } else {
+    const discountInput = document.querySelector(
+      CONSTANTS.SELECTORS.DISCOUNT_PERCENTAGE
+    );
+    discountInput.value = "0.0";
+    discountInput.classList.remove("text-danger", "text-success");
+  }
 }
 
 function updateUI() {
@@ -79,6 +145,7 @@ function updateUI() {
   });
 
   updateFoodQuantitiesInput();
+  calculateDiscount();
 }
 
 // Event handlers
@@ -121,6 +188,7 @@ function toggleFoodSelection(checkbox, foodId) {
   }
 
   updateFoodQuantitiesInput();
+  calculateDiscount();
 }
 
 function updateQuantity(input, foodId, price) {
@@ -141,6 +209,7 @@ function updateQuantity(input, foodId, price) {
   }
 
   updateFoodQuantitiesInput();
+  calculateDiscount();
 }
 
 function updateFoodQuantitiesInput() {
