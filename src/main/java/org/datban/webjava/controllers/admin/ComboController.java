@@ -1,6 +1,7 @@
 package org.datban.webjava.controllers.admin;
 
 import org.datban.webjava.models.Combo;
+import org.datban.webjava.models.Food;
 import org.datban.webjava.services.ComboService;
 
 import java.io.*;
@@ -9,6 +10,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.*;
 import javax.servlet.annotation.*;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 @WebServlet("/admin/combos/*")
@@ -23,7 +25,7 @@ public class ComboController extends HttpServlet {
 
   @Override
   protected void doGet(HttpServletRequest request, HttpServletResponse response)
-          throws ServletException, IOException {
+      throws ServletException, IOException {
     String pathInfo = request.getPathInfo();
 
     try {
@@ -43,7 +45,7 @@ public class ComboController extends HttpServlet {
 
   @Override
   protected void doPost(HttpServletRequest request, HttpServletResponse response)
-          throws ServletException, IOException {
+      throws ServletException, IOException {
     try {
       String pathInfo = request.getPathInfo();
       if (pathInfo != null && pathInfo.matches("/\\d+")) {
@@ -58,7 +60,7 @@ public class ComboController extends HttpServlet {
 
   @Override
   protected void doDelete(HttpServletRequest request, HttpServletResponse response)
-          throws ServletException, IOException {
+      throws ServletException, IOException {
     try {
       handleDeleteCombo(request, response);
       response.setStatus(HttpServletResponse.SC_OK);
@@ -68,11 +70,11 @@ public class ComboController extends HttpServlet {
   }
 
   private void handleListCombos(HttpServletRequest request, HttpServletResponse response)
-          throws SQLException, ServletException, IOException {
-    int currentPage = getCurrentPage(request);
-    int itemsPerPage = getItemsPerPage(request);
-    String status = getStatus(request);
-    String keyword = getKeyword(request);
+      throws SQLException, ServletException, IOException {
+    int currentPage = getIntParam(request, "page", 1);
+    int itemsPerPage = getIntParam(request, "itemsPerPage", ITEMS_PER_PAGE);
+    String status = getStringParam(request, "status");
+    String keyword = getStringParam(request, "keyword");
 
     int totalItems;
     List<Combo> combos;
@@ -112,7 +114,7 @@ public class ComboController extends HttpServlet {
     HttpSession session = request.getSession();
     String message = (String) session.getAttribute("message");
     String error = (String) session.getAttribute("error");
-    
+
     // Xóa message và error khỏi session sau khi đã lấy
     session.removeAttribute("message");
     session.removeAttribute("error");
@@ -123,68 +125,88 @@ public class ComboController extends HttpServlet {
     request.setAttribute("keyword", keyword);
     request.setAttribute("message", message);
     request.setAttribute("error", error);
-    setTitle(request, "Danh sách combo"); 
+    setTitle(request, "Danh sách combo");
     request.getRequestDispatcher("/WEB-INF/views/admin/combos/list.jsp")
-            .forward(request, response);
+        .forward(request, response);
   }
 
   private void handleShowAddForm(HttpServletRequest request, HttpServletResponse response)
-          throws ServletException, IOException {
+      throws ServletException, IOException {
     setTitle(request, "Thêm combo");
     request.getRequestDispatcher("/WEB-INF/views/admin/combos/add.jsp")
-            .forward(request, response);
+        .forward(request, response);
   }
 
   private void handleShowEditForm(HttpServletRequest request, HttpServletResponse response, String pathInfo)
-          throws SQLException, ServletException, IOException {
+      throws SQLException, ServletException, IOException {
+    // Lấy message và error từ session
+    HttpSession session = request.getSession();
+    String message = (String) session.getAttribute("message");
+    String error = (String) session.getAttribute("error");
+    session.removeAttribute("message");
+    session.removeAttribute("error");
+
+    // thong tin query params
     int id = Integer.parseInt(pathInfo.split("/")[1]);
+    int currentFoodPage = getIntParam(request, "foodPage", 1);
+    int foodItemsPerPage = getIntParam(request, "foodItemsPerPage", ITEMS_PER_PAGE);
+    String foodKeyword = getStringParam(request, "foodKeyword");
+    String foodStatus = getStringParam(request, "foodStatus");
+    String foodMealType = getStringParam(request, "foodMealType");
+
+    // call service
     Combo combo = comboService.getComboById(id);
+    int totalFoods = comboService.getTotalFoodsByComboId(id, foodKeyword, foodStatus, foodMealType);
+    int totalFoodPages = Math.max(1, (int) Math.ceil((double) totalFoods / foodItemsPerPage));
+    if (currentFoodPage > totalFoodPages) {
+      currentFoodPage = totalFoodPages;
+    }
+    List<Food> foods = comboService.getFoodsByComboId(id, currentFoodPage, foodItemsPerPage, foodKeyword, foodStatus, foodMealType);
+
+    // thong tin combo
     request.setAttribute("combo", combo);
+    // thong tin food
+    request.setAttribute("foods", foods);
+    request.setAttribute("totalFoods", totalFoods);
+    request.setAttribute("totalFoodPages", totalFoodPages);
+    request.setAttribute("currentFoodPage", currentFoodPage);
+    request.setAttribute("foodItemsPerPage", foodItemsPerPage);
+    request.setAttribute("foodKeyword", foodKeyword);
+    request.setAttribute("foodStatus", foodStatus);
+    request.setAttribute("foodMealType", foodMealType);
+    request.setAttribute("url", request.getContextPath() + "/admin/combos/" + id + "/edit");
+    // message và error
+    request.setAttribute("message", message);
+    request.setAttribute("error", error);
     setTitle(request, "Chỉnh sửa combo " + combo.getName());
     request.getRequestDispatcher("/WEB-INF/views/admin/combos/edit.jsp")
-            .forward(request, response);
+        .forward(request, response);
   }
 
   private void handleShowDetail(HttpServletRequest request, HttpServletResponse response, String pathInfo)
-          throws SQLException, ServletException, IOException {
+      throws SQLException, ServletException, IOException {
     int id = Integer.parseInt(pathInfo.substring(1));
     Combo combo = comboService.getComboById(id);
     request.setAttribute("combo", combo);
     setTitle(request, "Combo " + combo.getName());
     request.getRequestDispatcher("/WEB-INF/views/admin/combos/detail.jsp")
-            .forward(request, response);
+        .forward(request, response);
   }
 
-  private int getCurrentPage(HttpServletRequest request) {
-    String pageParam = request.getParameter("page");
-    if (pageParam != null && !pageParam.isEmpty()) {
-      return Integer.parseInt(pageParam);
-    }
-    return 1;
-  }
-
-  private String getStatus(HttpServletRequest request) {
-    String status = request.getParameter("status");
-    if (status == null || status.isEmpty()) {
+  private String getStringParam(HttpServletRequest request, String param) {
+    String value = request.getParameter(param);
+    if (value == null || value.isEmpty()) {
       return null;
     }
-    return status;
+    return value;
   }
 
-  private int getItemsPerPage(HttpServletRequest request) {
-    String itemsPerPageParam = request.getParameter("itemsPerPage");
-    if (itemsPerPageParam != null && !itemsPerPageParam.isEmpty()) {
-      return Integer.parseInt(itemsPerPageParam);
+  private int getIntParam(HttpServletRequest request, String param, int defaultValue) {
+    String value = request.getParameter(param);
+    if (value != null && !value.isEmpty()) {
+      return Integer.parseInt(value);
     }
-    return ITEMS_PER_PAGE;
-  }
-
-  private String getKeyword(HttpServletRequest request) {
-    String keyword = request.getParameter("keyword");
-    if (keyword == null || keyword.isEmpty()) {
-      return null;
-    }
-    return keyword;
+    return defaultValue;
   }
 
   private void setPaginationAttributes(HttpServletRequest request, int currentPage, int totalPages, int totalItems, int itemsPerPage) {
@@ -195,7 +217,7 @@ public class ComboController extends HttpServlet {
   }
 
   private void handleCreateCombo(HttpServletRequest request, HttpServletResponse response)
-          throws SQLException, ServletException, IOException {
+      throws SQLException, ServletException, IOException {
     HttpSession session = request.getSession();
     try {
       Combo combo = getComboFromRequest(request);
@@ -209,16 +231,26 @@ public class ComboController extends HttpServlet {
     }
   }
 
+/**
+ * ?foodQuantities=1-2,3-4
+ * => [1, 2], [3, 4]
+ * 1: foodId
+ * 2: quantity của foodId 1
+ * 3: foodId
+ * 4: quantity của foodId 3
+ */
   private void handleUpdateCombo(HttpServletRequest request, HttpServletResponse response, String pathInfo)
-          throws SQLException, ServletException, IOException {
+      throws SQLException, ServletException, IOException {
     HttpSession session = request.getSession();
     int id = Integer.parseInt(pathInfo.split("/")[1]);
     try {
       Combo combo = getComboFromRequest(request);
+      String foodQuantitiesQuery = request.getParameter("foodQuantities");
+      comboService.updateFoodQuantitiesByComboId(id, foodQuantitiesQuery);
       combo.setId(id);
       comboService.updateCombo(combo);
       session.setAttribute("message", "Cập nhật combo thành công");
-      response.sendRedirect(request.getContextPath() + "/admin/combos");
+      response.sendRedirect(request.getContextPath() + "/admin/combos/" + id + "/edit");
     } catch (Exception e) {
       System.out.println(e.getMessage());
       session.setAttribute("error", "Cập nhật combo thất bại");
@@ -227,7 +259,7 @@ public class ComboController extends HttpServlet {
   }
 
   private void handleDeleteCombo(HttpServletRequest request, HttpServletResponse response)
-          throws SQLException, ServletException, IOException {
+      throws SQLException, ServletException, IOException {
     HttpSession session = request.getSession();
     String pathInfo = request.getPathInfo();
     int id = Integer.parseInt(pathInfo.split("/")[1]);
