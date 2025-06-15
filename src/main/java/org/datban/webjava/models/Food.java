@@ -13,6 +13,11 @@ public class Food implements IBaseModel<Integer> {
     private Integer createdBy;
     private Timestamp createdAt;
     private String mealType;
+    // temp fields
+    private Integer quantity;
+    private Float totalPrice;
+    private Boolean isMainFood;
+
 
     public Integer getId() {
         return id;
@@ -84,5 +89,29 @@ public class Food implements IBaseModel<Integer> {
 
     public void setMealType(String mealType) {
         this.mealType = mealType;
+    }
+
+    public Integer getQuantity() {
+        return quantity;
+    }
+
+    public void setQuantity(Integer quantity) {
+        this.quantity = quantity;
+    }
+
+    public Float getTotalPrice() {
+        return totalPrice;
+    }
+
+    public void setTotalPrice(Float totalPrice) {
+        this.totalPrice = totalPrice;
+    }
+
+    public Boolean getIsMainFood() {
+        return isMainFood;
+    }
+
+    public void setIsMainFood(Boolean isMainFood) {
+        this.isMainFood = isMainFood;
     }
 }
