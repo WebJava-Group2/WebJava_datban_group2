@@ -45,8 +45,14 @@ public class FoodController extends HttpServlet {
           throws ServletException, IOException {
     try {
       String pathInfo = request.getPathInfo();
-      if (pathInfo != null && pathInfo.matches("/\\d+")) {
-        handleUpdateFood(request, response, pathInfo);
+      if (pathInfo != null) {
+        if (pathInfo.matches("/\\d+/status")) {
+          handleUpdateFoodStatus(request, response, pathInfo);
+        } else if (pathInfo.matches("/\\d+")) {
+          handleUpdateFood(request, response, pathInfo);
+        } else {
+          handleCreateFood(request, response);
+        }
       } else {
         handleCreateFood(request, response);
       }
@@ -240,14 +246,45 @@ public class FoodController extends HttpServlet {
     HttpSession session = request.getSession();
     int id = Integer.parseInt(pathInfo.split("/")[1]);
     try {
-      Food food = getFoodFromRequest(request);
-      food.setId(id);
-      foodService.updateFood(food);
+      // Lấy thông tin món ăn hiện tại
+      Food existingFood = foodService.getFoodById(id);
+      if (existingFood == null) {
+        session.setAttribute("error", "Không tìm thấy món ăn");
+        response.sendRedirect(request.getContextPath() + "/admin/foods");
+        return;
+      }
+
+      // Lấy thông tin mới từ form
+      Food updatedFood = getFoodFromRequest(request);
+      updatedFood.setId(id);
+      
+      // Nếu meal_type không hợp lệ (null), giữ nguyên giá trị cũ
+      if (updatedFood.getMealType() == null) {
+        // Thêm kiểm tra an toàn cho mealType hiện có
+        String existingMealType = existingFood.getMealType();
+        if (existingMealType != null) {
+          switch (existingMealType) {
+            case "breakfast":
+            case "lunch":
+            case "dinner":
+            case "dessert":
+              updatedFood.setMealType(existingMealType);
+              break;
+            default:
+              // Nếu giá trị cũ cũng không hợp lệ, đặt là null
+              updatedFood.setMealType(null);
+          }
+        } else {
+          updatedFood.setMealType(null); // Nếu giá trị cũ là null, giữ nguyên null
+        }
+      }
+
+      foodService.updateFood(updatedFood);
       session.setAttribute("message", "Cập nhật món ăn thành công");
       response.sendRedirect(request.getContextPath() + "/admin/foods");
     } catch (Exception e) {
       System.out.println(e.getMessage());
-      session.setAttribute("error", "Cập nhật món ăn thất bại");
+      session.setAttribute("error", "Cập nhật món ăn thất bại: " + e.getMessage());
       response.sendRedirect(request.getContextPath() + "/admin/foods/" + id + "/edit");
     }
   }
@@ -275,12 +312,67 @@ public class FoodController extends HttpServlet {
     food.setPrice(Float.parseFloat(request.getParameter("price")));
     food.setStatus(request.getParameter("status"));
     food.setImageUrl(request.getParameter("imageUrl"));
-    food.setMealType(request.getParameter("mealType"));
+    
+    // Xử lý mealType
+    String mealType = request.getParameter("mealType");
+    if (mealType != null && !mealType.isEmpty()) {
+      mealType = mealType.trim(); // Loại bỏ khoảng trắng thừa
+      System.out.println("DEBUG: Received mealType after trim: " + mealType);
+      
+      // Chuyển đổi giá trị tiếng Việt sang tiếng Anh nếu cần
+      switch (mealType) {
+        case "Bữa sáng":
+          food.setMealType("breakfast");
+          break;
+        case "Bữa trưa":
+          food.setMealType("lunch");
+          break;
+        case "Bữa tối":
+          food.setMealType("dinner");
+          break;
+        case "Tráng miệng":
+          food.setMealType("dessert");
+          break;
+        case "breakfast":
+        case "lunch":
+        case "dinner":
+        case "dessert":
+          food.setMealType(mealType);
+          break;
+        default:
+          food.setMealType(null); // Giá trị không hợp lệ
+      }
+    } else {
+      food.setMealType(null);
+    }
     return food;
   }
 
   private void setTitle(HttpServletRequest request, String title) {
     request.setAttribute("title", title);
+  }
+
+  private void handleUpdateFoodStatus(HttpServletRequest request, HttpServletResponse response, String pathInfo)
+          throws SQLException, ServletException, IOException {
+    HttpSession session = request.getSession();
+    int id = Integer.parseInt(pathInfo.split("/")[1]);
+    String newStatus = request.getParameter("status");
+    
+    try {
+      Food food = foodService.getFoodById(id);
+      if (food != null) {
+        food.setStatus(newStatus);
+        foodService.updateFood(food);
+        session.setAttribute("message", "Cập nhật trạng thái món ăn thành công");
+      } else {
+        session.setAttribute("error", "Không tìm thấy món ăn");
+      }
+      response.setStatus(HttpServletResponse.SC_OK);
+    } catch (Exception e) {
+      System.out.println(e.getMessage());
+      session.setAttribute("error", "Cập nhật trạng thái món ăn thất bại");
+      response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+    }
   }
 }
 

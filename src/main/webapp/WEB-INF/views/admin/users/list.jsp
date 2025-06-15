@@ -292,6 +292,11 @@
             search();
         }
     });
+
+    // Thêm sự kiện change cho các select filter
+    document.getElementById("role").addEventListener("change", function () {
+        filterByRole(this.value);
+    });
 </script>
 
 <%@ include file="../layouts/footer.jsp" %>

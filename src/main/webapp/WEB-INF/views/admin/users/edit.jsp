@@ -146,4 +146,64 @@
     });
 </script>
 
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const form = document.getElementById('editUserForm');
+        form.addEventListener('submit', function (event) {
+            const name = document.getElementById('name').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const phone = document.getElementById('phone').value.trim();
+            const role = document.getElementById('role').value;
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+
+            if (!name || !email || !phone || !role) {
+                alert('Vui lòng điền đầy đủ các trường bắt buộc (Tên, Email, Số điện thoại, Vai trò).');
+                event.preventDefault();
+                return;
+            }
+
+            // Validate email format
+            const emailRegex = /^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/;
+            if (!emailRegex.test(email)) {
+                alert('Vui lòng nhập địa chỉ email hợp lệ.');
+                event.preventDefault();
+                return;
+            }
+
+            // Validate Vietnamese phone number format
+            const phoneRegex = /^(?:(?:\+84|0084|0))[235789][0-9]{1,2}[0-9]{7}(?:[^\d]+|$)$/;
+            if (!phoneRegex.test(phone)) {
+                alert('Vui lòng nhập số điện thoại Việt Nam hợp lệ.');
+                event.preventDefault();
+                return;
+            }
+
+            // Validate password if provided
+            if (password) {
+                const passwordRegex = /^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$/;
+                if (!passwordRegex.test(password)) {
+                    alert('Mật khẩu mới phải có ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường, số và ký tự đặc biệt.');
+                    event.preventDefault();
+                    return;
+                }
+
+                if (password !== confirmPassword) {
+                    alert('Mật khẩu mới và xác nhận mật khẩu mới không khớp.');
+                    event.preventDefault();
+                    return;
+                }
+            } else if (confirmPassword) {
+                alert('Vui lòng nhập mật khẩu mới để xác nhận.');
+                event.preventDefault();
+                return;
+            }
+
+            if (!confirm('Bạn có chắc chắn muốn cập nhật thông tin người dùng này?')) {
+                event.preventDefault();
+            }
+        });
+    });
+</script>
+
 <%@ include file="../layouts/footer.jsp" %>

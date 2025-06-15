@@ -142,7 +142,7 @@
             <th class="text-center col-1" scope="col">Giá</th>
             <th class="text-center col-1" scope="col">Loại</th>
             <th class="text-center col-1" scope="col">Trạng thái</th>
-            <th class="text-center col-1" colspan="2" scope="col">Thao tác</th>
+            <th class="text-center col-1" colspan="3" scope="col">Thao tác</th>
           </tr>
           </thead>
           
@@ -184,14 +184,31 @@
               <td class="text-center align-middle">
                 <c:choose>
                   <c:when test="${food.status == 'available'}">
-                    <button class="btn btn-outline-success mx-auto" style="width: 120px; height: 38px;">Đang bán
+                    <button 
+                      onclick="toggleFoodStatus('${food.id}', 'unavailable')"
+                      class="btn btn-outline-success mx-auto" 
+                      style="width: 120px; height: 38px;">
+                      Đang bán
                     </button>
                   </c:when>
                   <c:otherwise>
-                    <button class="btn btn-outline-danger mx-auto" style="width: 120px; height: 38px;">Không bán
+                    <button 
+                      onclick="toggleFoodStatus('${food.id}', 'available')"
+                      class="btn btn-outline-danger mx-auto" 
+                      style="width: 120px; height: 38px;">
+                      Không bán
                     </button>
                   </c:otherwise>
                 </c:choose>
+              </td>
+              <td class="text-center align-middle">
+                <a
+                    href="${pageContext.request.contextPath}/admin/foods/${food.id}"
+                    class="btn btn-info d-flex justify-content-center align-items-center mx-auto"
+                    style="width: fit-content; height: 38px; color: white;"
+                >
+                  <i class="fas fa-eye"></i>
+                </a>
               </td>
               <td class="text-center align-middle">
                 <a
@@ -356,6 +373,25 @@
     // Thêm sự kiện change cho các select filter
     document.getElementById("mealTypeFilter").addEventListener("change", updateFilters);
     document.getElementById("statusFilter").addEventListener("change", updateFilters);
+
+    function toggleFoodStatus(id, newStatus) {
+        const statusText = newStatus === 'available' ? 'Đang bán' : 'Không bán';
+        if (confirm(`Bạn có chắc chắn muốn chuyển trạng thái món ăn này sang "${statusText}"?`)) {
+            fetch("${pageContext.request.contextPath}/admin/foods/" + id + "/status", {
+                method: "POST",
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: "status=" + newStatus
+            }).then((response) => {
+                if (response.ok) {
+                    window.location.reload();
+                } else {
+                    alert("Có lỗi xảy ra khi cập nhật trạng thái món ăn");
+                }
+            });
+        }
+    }
 </script>
 
 <%@ include file="../layouts/footer.jsp" %>

@@ -162,6 +162,31 @@ file="../layouts/header.jsp" %> <%@ include file="../layouts/sidebar.jsp" %>
       preview.src = "https://placehold.co/300x300";
     }
   }
+
+  // Thêm xác nhận trước khi submit form
+  document.getElementById('addFoodForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    // Kiểm tra các trường bắt buộc
+    const name = document.getElementById('name').value.trim();
+    const price = document.getElementById('price').value.trim();
+    const imageUrl = document.getElementById('imageUrl').value.trim();
+    
+    if (!name || !price || !imageUrl) {
+      alert('Vui lòng điền đầy đủ thông tin bắt buộc!');
+      return;
+    }
+    
+    // Kiểm tra giá hợp lệ
+    if (isNaN(price) || parseFloat(price) <= 0) {
+      alert('Giá phải là số dương!');
+      return;
+    }
+    
+    if (confirm('Bạn có chắc chắn muốn thêm món ăn này?')) {
+      this.submit();
+    }
+  });
 </script>
 
 <%@ include file="../layouts/footer.jsp" %>

@@ -110,14 +110,14 @@
             <th class="text-center col-1" scope="col">Sức chứa</th>
             <th class="text-center col-2" scope="col">Vị trí</th>
             <th class="text-center col-1" scope="col">Trạng thái</th>
-            <th class="text-center col-1" colspan="2" scope="col">Thao tác</th>
+            <th class="text-center col-1" colspan="3" scope="col">Thao tác</th>
           </tr>
           </thead>
           
           <tbody>
           <c:if test="${tables.size() == 0}">
             <tr>
-              <td colspan="8" class="text-center align-middle text-danger">Không có bàn nào</td>
+              <td colspan="9" class="text-center align-middle text-danger">Không có bàn nào</td>
             </tr>
           </c:if>
           <c:forEach items="${tables}" var="table" varStatus="loop">
@@ -130,25 +130,30 @@
               <td class="text-center align-middle">
                 <c:choose>
                   <c:when test="${table.status == 'available'}">
-                    <button class="btn btn-outline-success mx-auto" style="width: 150px; height: 38px;">Trống</button>
+                    <button class="btn btn-outline-success mx-auto" style="width: 150px; height: 38px;" onclick="toggleTableStatus('${table.id}', 'occupied')">Trống</button>
                   </c:when>
                   <c:when test="${table.status == 'occupied'}">
-                    <button class="btn btn-outline-warning mx-auto" style="width: 150px; height: 38px;">Đang có khách
-                    </button>
+                    <button class="btn btn-outline-warning mx-auto" style="width: 150px; height: 38px;" onclick="toggleTableStatus('${table.id}', 'reserved')">Đang có khách</button>
                   </c:when>
                   <c:when test="${table.status == 'reserved'}">
-                    <button class="btn btn-outline-info mx-auto" style="width: 150px; height: 38px;">Đã đặt trước
-                    </button>
+                    <button class="btn btn-outline-info mx-auto" style="width: 150px; height: 38px;" onclick="toggleTableStatus('${table.id}', 'maintenance')">Đã đặt trước</button>
                   </c:when>
                   <c:otherwise>
-                    <button class="btn btn-outline-danger mx-auto" style="width: 150px; height: 38px;">Bảo trì</button>
+                    <button class="btn btn-outline-danger mx-auto" style="width: 150px; height: 38px;" onclick="toggleTableStatus('${table.id}', 'available')">Bảo trì</button>
                   </c:otherwise>
                 </c:choose>
               </td>
               <td class="text-center align-middle">
+                <a href="${pageContext.request.contextPath}/admin/tables/${table.id}"
+                   class="btn btn-info d-flex justify-content-center align-items-center mx-auto w-fit"
+                   style="width: fit-content; height: 38px; color: white;">
+                  <i class="fas fa-info-circle"></i>
+                </a>
+              </td>
+              <td class="text-center align-middle">
                 <a href="${pageContext.request.contextPath}/admin/tables/${table.id}/edit"
                    class="btn btn-warning d-flex justify-content-center align-items-center mx-auto w-fit"
-                   style="width: fit-content; height: 38px; color: #282727">
+                   style="width: fit-content; height: 38px; color: #282727;">
                   <i class="fas fa-edit"></i>
                 </a>
               </td>
@@ -243,6 +248,40 @@
         }
     }
 
+    function toggleTableStatus(id, newStatus) {
+        let confirmMessage = "";
+        if (newStatus === "available") {
+            confirmMessage = "Bạn có chắc chắn muốn chuyển trạng thái bàn này thành 'Trống'?";
+        } else if (newStatus === "occupied") {
+            confirmMessage = "Bạn có chắc chắn muốn chuyển trạng thái bàn này thành 'Đang có khách'?";
+        } else if (newStatus === "reserved") {
+            confirmMessage = "Bạn có chắc chắn muốn chuyển trạng thái bàn này thành 'Đã đặt trước'?";
+        } else if (newStatus === "maintenance") {
+            confirmMessage = "Bạn có chắc chắn muốn chuyển trạng thái bàn này thành 'Bảo trì'?";
+        }
+
+        if (confirm(confirmMessage)) {
+            fetch("${pageContext.request.contextPath}/admin/tables/" + id + "/status", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded",
+                },
+                body: "newStatus=" + newStatus,
+            })
+                .then((response) => {
+                    if (response.ok) {
+                        window.location.reload();
+                    } else {
+                        alert("Có lỗi xảy ra khi cập nhật trạng thái bàn");
+                    }
+                })
+                .catch((error) => {
+                    console.error("Lỗi:", error);
+                    alert("Có lỗi xảy ra khi cập nhật trạng thái bàn");
+                });
+        }
+    }
+
     function changeItemsPerPage(value) {
         const currentUrl = new URL(window.location.href);
         currentUrl.searchParams.set("itemsPerPage", value);
@@ -250,8 +289,8 @@
         window.location.href = currentUrl.toString();
     }
 
-    document.getElementById("statusFilter").addEventListener("change", function () {
-        const status = this.value;
+    function updateFilters() {
+        const status = document.getElementById("statusFilter").value;
         const currentUrl = new URL(window.location.href);
 
         if (status && status !== 'all') {
@@ -259,10 +298,10 @@
         } else {
             currentUrl.searchParams.delete("status");
         }
-        currentUrl.searchParams.set("page", "1"); // Reset về trang 1 khi thay đổi trạng thái
 
+        currentUrl.searchParams.set("page", "1"); // Reset về trang 1 khi thay đổi filter
         window.location.href = currentUrl.toString();
-    });
+    }
 
     function search() {
         const keyword = document.getElementById('keyword').value.trim();
@@ -291,6 +330,9 @@
             search();
         }
     });
+
+    // Thêm sự kiện change cho các select filter
+    document.getElementById("statusFilter").addEventListener("change", updateFilters);
 </script>
 
 <%@ include file="../layouts/footer.jsp" %> 

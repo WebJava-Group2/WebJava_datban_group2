@@ -155,23 +155,48 @@
 
 <script>
   function previewImageUrl(input) {
-        const preview = document.getElementById('imagePreview');
-        const url = input.value;
+    const preview = document.getElementById('imagePreview');
+    const url = input.value;
 
-        if (url && url.trim() !== '') {
-            preview.src = url;
-        } else {
-            preview.src = "https://picsum.photos/300/300?random=${food.id}";
-        }
+    if (url && url.trim() !== '') {
+      preview.src = url;
+    } else {
+      preview.src = "https://picsum.photos/300/300?random=${food.id}";
     }
+  }
 
-    // Hiển thị hình ảnh khi trang được tải
-    document.addEventListener('DOMContentLoaded', function () {
-        const imageUrl = document.getElementById('imageUrl').value;
-        if (imageUrl && imageUrl.trim() !== '') {
-            document.getElementById('imagePreview').src = imageUrl;
-        }
-    });
+  // Hiển thị hình ảnh khi trang được tải
+  document.addEventListener('DOMContentLoaded', function () {
+    const imageUrl = document.getElementById('imageUrl').value;
+    if (imageUrl && imageUrl.trim() !== '') {
+      document.getElementById('imagePreview').src = imageUrl;
+    }
+  });
+
+  // Thêm xác nhận trước khi submit form
+  document.getElementById('editFoodForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    // Kiểm tra các trường bắt buộc
+    const name = document.getElementById('name').value.trim();
+    const price = document.getElementById('price').value.trim();
+    const imageUrl = document.getElementById('imageUrl').value.trim();
+    
+    if (!name || !price || !imageUrl) {
+      alert('Vui lòng điền đầy đủ thông tin bắt buộc!');
+      return;
+    }
+    
+    // Kiểm tra giá hợp lệ
+    if (isNaN(price) || parseFloat(price) <= 0) {
+      alert('Giá phải là số dương!');
+      return;
+    }
+    
+    if (confirm('Bạn có chắc chắn muốn lưu thay đổi cho món ăn này?')) {
+      this.submit();
+    }
+  });
 </script>
 
 <%@ include file="../layouts/footer.jsp" %> 

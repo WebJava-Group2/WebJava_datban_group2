@@ -98,3 +98,32 @@
 </main>
 
 <%@ include file="../layouts/footer.jsp" %>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const form = document.getElementById('addTableForm');
+        form.addEventListener('submit', function (event) {
+            // Basic validation for required fields
+            const name = document.getElementById('name').value.trim();
+            const capacity = document.getElementById('capacity').value.trim();
+            const location = document.getElementById('location').value.trim();
+
+            if (!name || !capacity || !location) {
+                alert('Vui lòng điền đầy đủ các trường bắt buộc.');
+                event.preventDefault(); // Ngăn chặn gửi form
+                return;
+            }
+            
+            // Validate capacity is a positive number
+            if (parseInt(capacity) <= 0) {
+                alert('Sức chứa phải là một số dương.');
+                event.preventDefault(); // Ngăn chặn gửi form
+                return;
+            }
+
+            if (!confirm('Bạn có chắc chắn muốn thêm bàn mới?')) {
+                event.preventDefault(); // Ngăn chặn gửi form nếu người dùng không xác nhận
+            }
+        });
+    });
+</script>

@@ -298,6 +298,9 @@ public class UserController extends HttpServlet {
     } else {
       user.setPassword(existingUser.getPassword());
     }
+    
+    System.out.println("DEBUG: User role before calling update service: " + user.getRole());
+    
     try {
       userService.updateUser(user);
       if (currentUser.getId() == id && !oldEmail.equals(newEmail)) {
@@ -320,6 +323,20 @@ public class UserController extends HttpServlet {
       session.setAttribute("tempUser", user);
       response.sendRedirect(request.getContextPath() + "/admin/users/" + id + "/edit");
     }
+  }
+
+  private User getUserFromRequest(HttpServletRequest request) {
+    User user = new User();
+    user.setName(request.getParameter("name"));
+    user.setEmail(request.getParameter("email"));
+    user.setPhone(request.getParameter("phone"));
+    String role = request.getParameter("role");
+    if (role != null) {
+      role = role.trim(); // Loại bỏ khoảng trắng thừa
+    }
+    System.out.println("DEBUG: Role received in getUserFromRequest (after trim): " + role);
+    user.setRole(role);
+    return user;
   }
 
   private void handleDeleteUser(HttpServletRequest request, HttpServletResponse response)
@@ -347,15 +364,6 @@ public class UserController extends HttpServlet {
       request.getRequestDispatcher("/WEB-INF/views/admin/users/list.jsp")
           .forward(request, response);
     }
-  }
-
-  private User getUserFromRequest(HttpServletRequest request) {
-    User user = new User();
-    user.setName(request.getParameter("name"));
-    user.setEmail(request.getParameter("email"));
-    user.setPhone(request.getParameter("phone"));
-    user.setRole(request.getParameter("role"));
-    return user;
   }
 
   private void setTitle(HttpServletRequest request, String title) {

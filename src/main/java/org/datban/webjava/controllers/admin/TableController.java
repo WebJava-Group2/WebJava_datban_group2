@@ -46,7 +46,9 @@ public class TableController extends HttpServlet {
           throws ServletException, IOException {
     try {
       String pathInfo = request.getPathInfo();
-      if (pathInfo != null && pathInfo.matches("/\\d+")) {
+      if (pathInfo != null && pathInfo.matches("/\\d+/status")) {
+        handleUpdateTableStatus(request, response, pathInfo);
+      } else if (pathInfo != null && pathInfo.matches("/\\d+")) {
         handleUpdateTable(request, response, pathInfo);
       } else {
         handleCreateTable(request, response);
@@ -223,6 +225,30 @@ public class TableController extends HttpServlet {
       System.out.println(e.getMessage());
       session.setAttribute("error", "Cập nhật bàn thất bại");
       response.sendRedirect(request.getContextPath() + "/admin/tables/" + id + "/edit");
+    }
+  }
+
+  private void handleUpdateTableStatus(HttpServletRequest request, HttpServletResponse response, String pathInfo)
+          throws SQLException, ServletException, IOException {
+    HttpSession session = request.getSession();
+    int id = Integer.parseInt(pathInfo.split("/")[1]);
+    String newStatus = request.getParameter("newStatus");
+    try {
+      Table existingTable = tableService.getTableById(id);
+      if (existingTable == null) {
+        session.setAttribute("error", "Không tìm thấy bàn");
+        response.sendRedirect(request.getContextPath() + "/admin/tables");
+        return;
+      }
+
+      existingTable.setStatus(newStatus);
+      tableService.updateTable(existingTable);
+      session.setAttribute("message", "Cập nhật trạng thái bàn thành công");
+      response.setStatus(HttpServletResponse.SC_OK); // Trả về 200 OK
+    } catch (Exception e) {
+      System.out.println(e.getMessage());
+      session.setAttribute("error", "Cập nhật trạng thái bàn thất bại: " + e.getMessage());
+      response.sendRedirect(request.getContextPath() + "/admin/tables");
     }
   }
 
