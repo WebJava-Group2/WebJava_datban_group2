@@ -55,7 +55,7 @@
         <div class="d-flex align-items-center">
           <label for="keyword" class="me-2">Tìm kiếm:</label>
           <div class="input-group" style="width: 300px">
-            <div class="position-relative flex-grow-1">
+            <div class="position-relative flex-grow-1" style="width: 250px">
               <input
                   type="text"
                   class="form-control"
