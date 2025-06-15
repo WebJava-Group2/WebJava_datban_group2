@@ -19,12 +19,14 @@
       <div class="alert alert-danger" role="alert">
         <c:out value="${error}"/>
       </div>
+      <c:remove var="error" scope="session"/>
     </c:if>
     
     <c:if test="${message != null}">
       <div class="alert alert-success">
         <c:out value="${message}"/>
       </div>
+      <c:remove var="message" scope="session"/>
     </c:if>
     
     <a
@@ -41,7 +43,6 @@
             <option value="all">Tất cả</option>
             <option value="pending" ${selectedStatus == 'pending' ? 'selected' : ''}>Chờ xác nhận</option>
             <option value="confirmed" ${selectedStatus == 'confirmed' ? 'selected' : ''}>Đã xác nhận</option>
-            <option value="cancelled" ${selectedStatus == 'cancelled' ? 'selected' : ''}>Đã hủy</option>
           </select>
         </div>
         <div class="d-flex align-items-center">

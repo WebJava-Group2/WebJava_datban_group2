@@ -16,7 +16,11 @@ public class ReservationRepository extends BaseRepository<Reservation, Integer> 
 
     @Override
     protected String getDisplayQuery() {
-        return "SELECT r.id, r.total_people, r.status, r.reservation_at, r.note, r.total_price, r.created_at, r.customer_id, u.name AS customerName FROM reservations r LEFT JOIN users u ON r.customer_id = u.id WHERE r.status != 'cancelled'";
+        return "SELECT r.id, r.total_people, r.status, r.reservation_at, r.note, r.total_price, r.created_at, r.customer_id, u.name AS customerName FROM reservations r LEFT JOIN users u ON r.customer_id = u.id";
+    }
+
+    protected String getBaseQuery() {
+        return getDisplayQuery() + " WHERE r.status != 'cancelled'";
     }
 
     @Override
@@ -63,7 +67,7 @@ public class ReservationRepository extends BaseRepository<Reservation, Integer> 
 
     @Override
     public Reservation getById(Integer id) throws SQLException {
-        String query = "SELECT r.id, r.total_people, r.status, r.reservation_at, r.note, r.total_price, r.created_at, r.customer_id, r.table_id, u.name AS customerName FROM reservations r LEFT JOIN users u ON r.customer_id = u.id WHERE r.id = ?";
+        String query = getBaseQuery() + " AND r.id = ?";
         try (PreparedStatement statement = connection.prepareStatement(query)) {
             statement.setInt(1, id);
             ResultSet resultSet = statement.executeQuery();
@@ -76,16 +80,36 @@ public class ReservationRepository extends BaseRepository<Reservation, Integer> 
 
     @Override
     public List<Reservation> getAll() throws SQLException {
-        return super.getAll();
+        List<Reservation> resultList = new ArrayList<>();
+        String query = getBaseQuery();
+        Statement statement = connection.createStatement();
+        ResultSet resultSet = statement.executeQuery(query);
+
+        while (resultSet.next()) {
+            Reservation entity = mapResultSetToEntity(resultSet);
+            resultList.add(entity);
+        }
+        return resultList;
     }
 
     @Override
     public List<Reservation> getWithPaginate(int page, int itemsPerPage) throws SQLException {
-        return super.getWithPaginate(page, itemsPerPage);
+        List<Reservation> resultList = new ArrayList<>();
+        String query = getBaseQuery() + " LIMIT ? OFFSET ?";
+        PreparedStatement statement = connection.prepareStatement(query);
+        statement.setInt(1, itemsPerPage);
+        statement.setInt(2, (page - 1) * itemsPerPage);
+        ResultSet resultSet = statement.executeQuery();
+
+        while (resultSet.next()) {
+            Reservation entity = mapResultSetToEntity(resultSet);
+            resultList.add(entity);
+        }
+        return resultList;
     }
 
     public List<Reservation> getReservationsByUserId(int userId) throws SQLException {
-        String query = getDisplayQuery() + " WHERE r.user_id = ?";
+        String query = getBaseQuery() + " AND r.customer_id = ?";
         PreparedStatement statement = connection.prepareStatement(query);
         statement.setInt(1, userId);
         ResultSet resultSet = statement.executeQuery();
@@ -98,7 +122,7 @@ public class ReservationRepository extends BaseRepository<Reservation, Integer> 
     }
 
     public List<Reservation> getReservationsByStatus(String status) throws SQLException {
-        String query = getDisplayQuery() + " WHERE r.status = ?";
+        String query = getBaseQuery() + " AND r.status = ?";
         PreparedStatement statement = connection.prepareStatement(query);
         statement.setString(1, status);
         ResultSet resultSet = statement.executeQuery();
@@ -115,7 +139,7 @@ public class ReservationRepository extends BaseRepository<Reservation, Integer> 
     }
 
     public int getTotalReservations() throws SQLException {
-        String query = "SELECT COUNT(*) FROM " + getTableName();
+        String query = "SELECT COUNT(*) FROM " + getTableName() + " WHERE status != 'cancelled'";
         Statement statement = connection.createStatement();
         ResultSet resultSet = statement.executeQuery(query);
         
@@ -337,7 +361,7 @@ public class ReservationRepository extends BaseRepository<Reservation, Integer> 
 
     public List<Reservation> getReservationsByPageAndStatus(int page, int itemsPerPage, String status) throws SQLException {
         List<Reservation> resultList = new ArrayList<>();
-        String query = getDisplayQuery() + " WHERE r.status = ? LIMIT ? OFFSET ?";
+        String query = getBaseQuery() + " AND r.status = ? LIMIT ? OFFSET ?";
         PreparedStatement statement = connection.prepareStatement(query);
         statement.setString(1, status);
         statement.setInt(2, itemsPerPage);
@@ -353,7 +377,7 @@ public class ReservationRepository extends BaseRepository<Reservation, Integer> 
     }
 
     public int getTotalReservationsByStatus(String status) throws SQLException {
-        String query = "SELECT COUNT(*) FROM " + getTableName() + " r WHERE r.status = ?";
+        String query = "SELECT COUNT(*) FROM " + getTableName() + " r WHERE r.status != 'cancelled' AND r.status = ?";
         PreparedStatement statement = connection.prepareStatement(query);
         statement.setString(1, status);
         ResultSet resultSet = statement.executeQuery();
@@ -366,7 +390,7 @@ public class ReservationRepository extends BaseRepository<Reservation, Integer> 
 
     public List<Reservation> searchReservations(String keyword, int page, int itemsPerPage) throws SQLException {
         List<Reservation> resultList = new ArrayList<>();
-        String query = getDisplayQuery() + " WHERE r.note LIKE ? OR u.name LIKE ? LIMIT ? OFFSET ?";
+        String query = getBaseQuery() + " AND (r.note LIKE ? OR u.name LIKE ?) LIMIT ? OFFSET ?";
         PreparedStatement statement = connection.prepareStatement(query);
         statement.setString(1, "%" + keyword + "%");
         statement.setString(2, "%" + keyword + "%");
@@ -381,7 +405,7 @@ public class ReservationRepository extends BaseRepository<Reservation, Integer> 
     }
 
     public int getTotalSearchResults(String keyword) throws SQLException {
-        String query = "SELECT COUNT(*) FROM " + getTableName() + " r LEFT JOIN users u ON r.customer_id = u.id WHERE r.note LIKE ? OR u.name LIKE ?";
+        String query = "SELECT COUNT(*) FROM " + getTableName() + " r LEFT JOIN users u ON r.customer_id = u.id WHERE r.status != 'cancelled' AND (r.note LIKE ? OR u.name LIKE ?)";
         PreparedStatement statement = connection.prepareStatement(query);
         statement.setString(1, "%" + keyword + "%");
         statement.setString(2, "%" + keyword + "%");
